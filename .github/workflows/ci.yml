@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  load-check:
+    name: Project loads
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.7.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Import project
+        run: godot --headless --import || true
+
+      - name: Load project headlessly
+        run: |
+          # Fail on script parse errors or missing resources reported in the output
+          godot --headless --quit 2>&1 | tee load.log
+          ! grep -E "SCRIPT ERROR|Parse Error|ERROR: Failed to load" load.log
+
+  export-smoke:
+    name: Linux export
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.7.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install export templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/4.7.2.stable ~/.local/share/godot/export_templates/4.7.2.stable || true
+
+      - name: Import project
+        run: godot --headless --import || true
+
+      - name: Export
+        run: |
+          mkdir -p build/linux
+          godot --headless --export-release "Linux"
+          test -s build/linux/game-jam-2.x86_64

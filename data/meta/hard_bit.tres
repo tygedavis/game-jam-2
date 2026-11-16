@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MetaUpgradeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/meta_upgrade_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Harder Bit"
+description = "+15% attack damage per level"
+property = "attack_damage"
+multiplier = 1.15
+base_cost = 20

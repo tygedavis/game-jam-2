@@ -10,7 +10,7 @@ Answer one question: **is steering a drill that auto-digs and auto-fights, while
 
 ## Decisions
 - Attack direction follows the drill's movement direction (single input, easy to change later).
-- Movement is four-directional (one axis at a time). Controls: WASD or arrows; Space on the surface.
+- Movement is four-directional (one axis at a time). Controls: WASD or arrows; Space is always the interaction button.
 - Terrain is endless in depth. Tile HP comes from a formula (`TerrainProfile`: `base_hp * hp_growth ^ layer`), with optional hand-authored `LayerDef` overrides (name, colour, HP) for layers that need personality. Only damaged or dug tiles are stored.
 - Terrain is a script-drawn grid (not a `TileMapLayer`), so no tileset is needed; swap to tiles when art arrives.
 - Only the player's attacks collect trinkets. A trinket in a tile broken by an enemy is lost.
@@ -26,10 +26,15 @@ Each was playable and committed on its own.
 5. **Trinkets and depth** (done). Buried `TrinketDef`s (rarer and more valuable deeper), depth and trinket HUD, results screen on death.
 6. **Stretch**
    - Minimal surface scene with a start prompt (done).
+   - Persistent wallet, owner and shop with permanent upgrades (done, see below).
    - Tunnel-dweller enemy (not started).
 
+## Meta-progression (done)
+- `Save` autoload (`scripts/save.gd`) holds money and purchased upgrade levels in `user://save.json`.
+- Trinket value is banked as money when a run ends (currently only on death, and all of it is kept: no penalty yet).
+- The owner stands on the surface (walk up, press Space). `MetaUpgradeDef` resources in `data/meta/` are listed on both `surface.tscn` (the shop stock) and `main.tscn` (applied at run start). Each level multiplies one drill stat; cost grows per level.
+
 ## Not yet built (vision items beyond the prototype)
-- Owner, shop, and permanent upgrades; carrying trinkets/money between runs.
 - Voluntary return to the surface mid-run, and a death penalty.
 - Tunnel-dweller enemies and pre-dug tunnels; enemy scaling with depth.
 

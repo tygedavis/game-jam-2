@@ -6,6 +6,8 @@ const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 ## Enemy types that can spawn. Edit in main.tscn.
 @export var enemy_defs: Array[EnemyDef] = []
 ## Upgrades offered on level-up (three are picked at random). Edit in main.tscn.
+## Permanent upgrades (bought from the owner) applied at run start.
+@export var meta_upgrades: Array[MetaUpgradeDef] = []
 @export var upgrade_defs: Array[UpgradeDef] = []
 @export var spawn_interval := 2.0
 @export var max_enemies := 25
@@ -32,6 +34,8 @@ var _trinket_value := 0
 
 func _ready() -> void:
 	drill.terrain = terrain
+	Save.apply_to(drill, meta_upgrades)
+	drill.hp = drill.max_hp
 	# Start parked on the ground line, matching the hub drill.
 	drill.position = Vector2(0.0, -12.0)
 	camera.position = drill.position
@@ -134,6 +138,8 @@ func _on_player_died() -> void:
 		lines.append("  %s x%d" % [name, _trinkets[name]])
 	lines.append("")
 	lines.append("Total value: %d" % _trinket_value)
+	Save.bank(_trinket_value)
+	lines.append("Banked %d  (money: %d)" % [_trinket_value, Save.money])
 	_results.show_results("\n".join(lines))
 
 

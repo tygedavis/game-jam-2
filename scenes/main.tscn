@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/terrain.gd" id="2"]
@@ -24,10 +24,17 @@
 [ext_resource type="Resource" path="res://data/trinkets/coin.tres" id="18"]
 [ext_resource type="Resource" path="res://data/trinkets/fossil.tres" id="19"]
 [ext_resource type="Resource" path="res://data/trinkets/gem.tres" id="20"]
+[ext_resource type="Script" path="res://scripts/data/meta_upgrade_def.gd" id="mscript"]
+[ext_resource type="Resource" path="res://data/meta/hard_bit.tres" id="m0"]
+[ext_resource type="Resource" path="res://data/meta/quick_motor.tres" id="m1"]
+[ext_resource type="Resource" path="res://data/meta/long_bit.tres" id="m2"]
+[ext_resource type="Resource" path="res://data/meta/big_engine.tres" id="m3"]
+[ext_resource type="Resource" path="res://data/meta/armor_plating.tres" id="m4"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
 upgrade_defs = Array[ExtResource("11")]([ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15")])
+meta_upgrades = Array[ExtResource("mscript")]([ExtResource("m0"), ExtResource("m1"), ExtResource("m2"), ExtResource("m3"), ExtResource("m4")])
 enemy_defs = Array[ExtResource("9")]([ExtResource("10")])
 
 [node name="Terrain" type="Node2D" parent="."]

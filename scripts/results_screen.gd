@@ -25,7 +25,7 @@ func _ready() -> void:
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(_label)
 	var button := Button.new()
-	button.text = "Return to surface (Enter)"
+	button.text = "Return to surface (Space)"
 	button.pressed.connect(func() -> void: retry.emit())
 	col.add_child(button)
 	button.grab_focus.call_deferred()
@@ -39,5 +39,6 @@ func show_results(text: String) -> void:
 
 func _input(event: InputEvent) -> void:
 	if visible and event is InputEventKey and event.pressed and not event.echo \
-			and event.physical_keycode in [KEY_ENTER, KEY_KP_ENTER]:
+			and event.physical_keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
+		get_viewport().set_input_as_handled()
 		retry.emit()

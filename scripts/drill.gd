@@ -135,13 +135,52 @@ func _attack() -> void:
 	r.position += position
 	var a := terrain.world_to_cell(r.position)
 	var b := terrain.world_to_cell(r.end - Vector2(0.01, 0.01))
+	# Enemies can only be hit up to the nearest solid dirt (checked before digging),
+	# so the attack can't reach through the ground.
+	var enemy_r := _clip_to_open(r, a, b)
 	for y in range(a.y, b.y + 1):
 		for x in range(a.x, b.x + 1):
 			terrain.damage(Vector2i(x, y), attack_damage, true)
 	for node in get_tree().get_nodes_in_group("enemies"):
 		var enemy := node as Enemy
-		if enemy and enemy.rect().intersects(r):
+		if enemy and enemy.rect().intersects(enemy_r):
 			enemy.take_damage(attack_damage)
+
+
+## Trims world-space attack rect `r` (covering cells `a`..`b`) so it stops at the
+## nearest solid cell in the facing direction.
+func _clip_to_open(r: Rect2, a: Vector2i, b: Vector2i) -> Rect2:
+	var T := float(Terrain.TILE)
+	var limit := INF
+	for y in range(a.y, b.y + 1):
+		for x in range(a.x, b.x + 1):
+			if not terrain.is_solid(Vector2i(x, y)):
+				continue
+			var d: float
+			if facing.x > 0:
+				d = x * T - r.position.x
+			elif facing.x < 0:
+				d = r.end.x - (x + 1) * T
+			elif facing.y > 0:
+				d = y * T - r.position.y
+			else:
+				d = r.end.y - (y + 1) * T
+			limit = minf(limit, d)
+	if limit == INF:
+		return r
+	limit = maxf(limit, 0.0)
+	var out := r
+	if facing.x > 0:
+		out.size.x = limit
+	elif facing.x < 0:
+		out.position.x = r.end.x - limit
+		out.size.x = limit
+	elif facing.y > 0:
+		out.size.y = limit
+	else:
+		out.position.y = r.end.y - limit
+		out.size.y = limit
+	return out
 
 
 func _draw() -> void:

@@ -72,7 +72,7 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - Jam deadline and scope cutoff (not yet given).
 - Exact death penalty.
 - Weapon and upgrade list, trinket list, layer count, and names for each layer.
-- Controls (keyboard/mouse/gamepad). Digging has no trigger; open question is how attack direction is chosen: follows movement direction, follows the mouse/aim stick, or a mix (e.g. attacks the nearest thing in reach).
+- Controls (keyboard/mouse/gamepad). Digging has no trigger. For the prototype, attack direction follows the movement direction; revisit if it feels wrong.
 - Whether extra weapons (beyond the dig attack) exist, and if they auto-target enemies only or can also break dirt.
 - Story and owner characterization.
 

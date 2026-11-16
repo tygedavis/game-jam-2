@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LayerDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/layer_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+layer_index = 1
+display_name = "Clay"
+use_color = true
+color = Color(0.45, 0.3, 0.3, 1)

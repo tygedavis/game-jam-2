@@ -1,15 +1,24 @@
 class_name Drill
 extends Node2D
 ## Player drill vehicle. Moves in four directions; blocked by dirt.
-## Milestone 1: pushing into dirt digs it. Milestone 2 replaces this with the auto-attack.
+## The auto-attack fires on a timer in the facing direction and damages dirt
+## (digging) and, later, enemies. Stats here are shared by both.
 
 @export var speed := 180.0
-@export var dig_interval := 0.18
+## Seconds between attacks.
+@export var attack_interval := 0.4
+## Damage per attack.
+@export var attack_damage := 10.0
+## How far past the drill's edge the attack reaches, in pixels.
+@export var attack_reach := 20.0
+## Half-width of the attack, in pixels.
+@export var attack_area := 15.0
 
 var terrain: Terrain
 var facing := Vector2i.DOWN
 var _half := Vector2(12, 12)
-var _dig_timer := 0.0
+var _attack_timer := 0.0
+var _flash := 0.0
 
 
 func _physics_process(delta: float) -> void:
@@ -20,10 +29,11 @@ func _physics_process(delta: float) -> void:
 	_move_axis(Vector2(step.x, 0))
 	_move_axis(Vector2(0, step.y))
 
-	_dig_timer -= delta
-	if input != Vector2i.ZERO and _dig_timer <= 0.0 and _blocked(position + Vector2(input) * (speed * delta + 1.0)):
-		_dig_front()
-		_dig_timer = dig_interval
+	_attack_timer -= delta
+	if _attack_timer <= 0.0:
+		_attack_timer = attack_interval
+		_attack()
+	_flash = maxf(_flash - delta, 0.0)
 	queue_redraw()
 
 
@@ -56,13 +66,24 @@ func _blocked(center: Vector2) -> bool:
 	return false
 
 
-func _dig_front() -> void:
-	var probe := position + Vector2(facing) * (_half.x + 4.0)
-	terrain.dig(terrain.world_to_cell(probe))
-	# Also clear the neighbors in the perpendicular direction so the tunnel fits the drill.
-	var side := Vector2(facing.y, facing.x).abs() * 10.0
-	terrain.dig(terrain.world_to_cell(probe + side))
-	terrain.dig(terrain.world_to_cell(probe - side))
+## The attack area in local space: from the drill's center out past its edge by `attack_reach`.
+func attack_rect() -> Rect2:
+	var reach := _half.x + attack_reach
+	if facing.x != 0:
+		return Rect2(0.0 if facing.x > 0 else -reach, -attack_area, reach, attack_area * 2.0)
+	return Rect2(-attack_area, 0.0 if facing.y > 0 else -reach, attack_area * 2.0, reach)
+
+
+func _attack() -> void:
+	_flash = 0.08
+	var r := attack_rect()
+	r.position += position
+	var a := terrain.world_to_cell(r.position)
+	var b := terrain.world_to_cell(r.end - Vector2(0.01, 0.01))
+	for y in range(a.y, b.y + 1):
+		for x in range(a.x, b.x + 1):
+			terrain.damage(Vector2i(x, y), attack_damage)
+	# Enemies take damage from the same attack in milestone 3.
 
 
 func _draw() -> void:
@@ -70,3 +91,5 @@ func _draw() -> void:
 	draw_rect(Rect2(-_half, _half * 2.0), Color(0.95, 0.75, 0.2))
 	var nose := Vector2(facing) * (_half.x + 6.0)
 	draw_circle(nose, 6.0, Color(0.7, 0.7, 0.75))
+	if _flash > 0.0:
+		draw_rect(attack_rect(), Color(1, 1, 1, 0.35))

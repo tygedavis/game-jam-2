@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/terrain.gd" id="2"]
@@ -13,8 +13,15 @@
 [ext_resource type="Script" path="res://scripts/data/enemy_def.gd" id="9"]
 [ext_resource type="Resource" path="res://data/enemies/burrower.tres" id="10"]
 
+[ext_resource type="Script" path="res://scripts/data/upgrade_def.gd" id="11"]
+[ext_resource type="Resource" path="res://data/upgrades/attack_damage.tres" id="12"]
+[ext_resource type="Resource" path="res://data/upgrades/attack_speed.tres" id="13"]
+[ext_resource type="Resource" path="res://data/upgrades/attack_reach.tres" id="14"]
+[ext_resource type="Resource" path="res://data/upgrades/move_speed.tres" id="15"]
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
+upgrade_defs = Array[ExtResource("11")]([ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15")])
 enemy_defs = Array[ExtResource("9")]([ExtResource("10")])
 
 [node name="Terrain" type="Node2D" parent="."]

@@ -5,6 +5,8 @@ const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 
 ## Enemy types that can spawn. Edit in main.tscn.
 @export var enemy_defs: Array[EnemyDef] = []
+## Upgrades offered on level-up (three are picked at random). Edit in main.tscn.
+@export var upgrade_defs: Array[UpgradeDef] = []
 @export var spawn_interval := 2.0
 @export var max_enemies := 25
 ## Spawn distance from the player, in pixels (just off screen).
@@ -18,6 +20,9 @@ const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 
 var _spawn_timer := 0.0
 var _hud: Label
+var _xp_bar: ProgressBar
+var _menu: LevelUpMenu
+var _pending_levels := 0
 
 
 func _ready() -> void:
@@ -27,11 +32,20 @@ func _ready() -> void:
 	camera.position = drill.position
 	drill.died.connect(_on_player_died)
 	drill.xp_changed.connect(_update_hud)
+	drill.leveled_up.connect(_on_leveled_up)
 	var layer := CanvasLayer.new()
 	_hud = Label.new()
 	_hud.position = Vector2(12, 8)
 	layer.add_child(_hud)
+	_xp_bar = ProgressBar.new()
+	_xp_bar.position = Vector2(12, 36)
+	_xp_bar.custom_minimum_size = Vector2(300, 14)
+	_xp_bar.show_percentage = false
+	layer.add_child(_xp_bar)
 	add_child(layer)
+	_menu = LevelUpMenu.new()
+	_menu.chosen.connect(_on_upgrade_chosen)
+	add_child(_menu)
 	_update_hud()
 
 
@@ -67,6 +81,31 @@ func _on_enemy_killed(def: EnemyDef, _at: Vector2) -> void:
 	drill.gain_xp(def.xp)
 
 
+func _on_leveled_up() -> void:
+	_pending_levels += 1
+	if _pending_levels == 1:
+		_offer_upgrades()
+
+
+func _offer_upgrades() -> void:
+	var pool := upgrade_defs.duplicate()
+	pool.shuffle()
+	var picks: Array[UpgradeDef] = []
+	for def in pool.slice(0, 3):
+		picks.append(def)
+	if picks.is_empty():
+		_pending_levels = 0
+		return
+	_menu.offer(picks)
+
+
+func _on_upgrade_chosen(def: UpgradeDef) -> void:
+	def.apply(drill)
+	_pending_levels -= 1
+	if _pending_levels > 0:
+		_offer_upgrades()
+
+
 func _on_player_died() -> void:
 	# Placeholder until the results screen (milestone 5): restart the run.
 	get_tree().reload_current_scene.call_deferred()
@@ -74,5 +113,7 @@ func _on_player_died() -> void:
 
 func _update_hud() -> void:
 	var row := maxi(terrain.world_to_cell(drill.position).y, 0)
-	_hud.text = "HP %d / %d    XP %d    Depth %d (%s)" % [
-		maxf(drill.hp, 0.0), drill.max_hp, drill.xp, row, terrain.layer_name(row)]
+	_hud.text = "HP %d / %d    Lv %d    Depth %d (%s)" % [
+		maxf(drill.hp, 0.0), drill.max_hp, drill.level, row, terrain.layer_name(row)]
+	_xp_bar.max_value = drill.xp_to_next()
+	_xp_bar.value = drill.xp

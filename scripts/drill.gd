@@ -16,6 +16,7 @@ extends Node2D
 
 signal died
 signal xp_changed
+signal leveled_up
 
 @export var max_hp := 100.0
 ## Seconds of invulnerability after taking a hit.
@@ -23,7 +24,9 @@ signal xp_changed
 
 var terrain: Terrain
 var hp := 0.0
+## XP progress toward the next level (resets on level-up).
 var xp := 0.0
+var level := 1
 var _invuln := 0.0
 var facing := Vector2i.DOWN
 var _half := Vector2(12, 12)
@@ -48,8 +51,16 @@ func take_damage(amount: float) -> void:
 		died.emit()
 
 
+func xp_to_next() -> float:
+	return 10.0 + 6.0 * (level - 1)
+
+
 func gain_xp(amount: float) -> void:
 	xp += amount
+	while xp >= xp_to_next():
+		xp -= xp_to_next()
+		level += 1
+		leveled_up.emit()
 	xp_changed.emit()
 
 

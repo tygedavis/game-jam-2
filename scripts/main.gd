@@ -23,6 +23,11 @@ var _hud: Label
 var _xp_bar: ProgressBar
 var _menu: LevelUpMenu
 var _pending_levels := 0
+var _results: ResultsScreen
+var _max_row := 0
+var _kills := 0
+var _trinkets := {} # display_name -> count
+var _trinket_value := 0
 
 
 func _ready() -> void:
@@ -43,6 +48,10 @@ func _ready() -> void:
 	_xp_bar.show_percentage = false
 	layer.add_child(_xp_bar)
 	add_child(layer)
+	terrain.trinket_collected.connect(_on_trinket_collected)
+	_results = ResultsScreen.new()
+	_results.retry.connect(_on_retry)
+	add_child(_results)
 	_menu = LevelUpMenu.new()
 	_menu.chosen.connect(_on_upgrade_chosen)
 	add_child(_menu)
@@ -77,7 +86,13 @@ func _try_spawn() -> void:
 	add_child(enemy)
 
 
+func _on_trinket_collected(def: TrinketDef) -> void:
+	_trinkets[def.display_name] = _trinkets.get(def.display_name, 0) + 1
+	_trinket_value += def.value
+
+
 func _on_enemy_killed(def: EnemyDef, _at: Vector2) -> void:
+	_kills += 1
 	drill.gain_xp(def.xp)
 
 
@@ -107,13 +122,30 @@ func _on_upgrade_chosen(def: UpgradeDef) -> void:
 
 
 func _on_player_died() -> void:
-	# Placeholder until the results screen (milestone 5): restart the run.
-	get_tree().reload_current_scene.call_deferred()
+	if _menu.visible:
+		_menu.visible = false
+	var lines := PackedStringArray(["YOU WERE OVERRUN", "",
+		"Deepest: %d  (%s)" % [_max_row, terrain.layer_name(_max_row)],
+		"Level: %d    Enemies drilled: %d" % [drill.level, _kills], "", "Trinkets found:"])
+	if _trinkets.is_empty():
+		lines.append("  (none)")
+	for name in _trinkets:
+		lines.append("  %s x%d" % [name, _trinkets[name]])
+	lines.append("")
+	lines.append("Total value: %d" % _trinket_value)
+	_results.show_results("\n".join(lines))
+
+
+func _on_retry() -> void:
+	get_tree().paused = false
+	get_tree().reload_current_scene()
 
 
 func _update_hud() -> void:
 	var row := maxi(terrain.world_to_cell(drill.position).y, 0)
-	_hud.text = "HP %d / %d    Lv %d    Depth %d (%s)" % [
-		maxf(drill.hp, 0.0), drill.max_hp, drill.level, row, terrain.layer_name(row)]
+	_max_row = maxi(_max_row, row)
+	_hud.text = "HP %d / %d    Lv %d    Depth %d (%s)    Trinkets %d (value %d)" % [
+		maxf(drill.hp, 0.0), drill.max_hp, drill.level, row, terrain.layer_name(row),
+		_trinkets.values().reduce(func(a: int, b: int) -> int: return a + b, 0), _trinket_value]
 	_xp_bar.max_value = drill.xp_to_next()
 	_xp_bar.value = drill.xp

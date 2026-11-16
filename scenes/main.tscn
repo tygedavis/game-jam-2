@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/terrain.gd" id="2"]
@@ -19,6 +19,12 @@
 [ext_resource type="Resource" path="res://data/upgrades/attack_reach.tres" id="14"]
 [ext_resource type="Resource" path="res://data/upgrades/move_speed.tres" id="15"]
 
+[ext_resource type="Script" path="res://scripts/data/trinket_def.gd" id="16"]
+[ext_resource type="Resource" path="res://data/trinkets/bone.tres" id="17"]
+[ext_resource type="Resource" path="res://data/trinkets/coin.tres" id="18"]
+[ext_resource type="Resource" path="res://data/trinkets/fossil.tres" id="19"]
+[ext_resource type="Resource" path="res://data/trinkets/gem.tres" id="20"]
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
 upgrade_defs = Array[ExtResource("11")]([ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15")])
@@ -27,6 +33,7 @@ enemy_defs = Array[ExtResource("9")]([ExtResource("10")])
 [node name="Terrain" type="Node2D" parent="."]
 script = ExtResource("2")
 profile = ExtResource("8")
+trinket_defs = Array[ExtResource("16")]([ExtResource("17"), ExtResource("18"), ExtResource("19"), ExtResource("20")])
 overrides = Array[ExtResource("6")]([ExtResource("4"), ExtResource("5")])
 
 [node name="Drill" type="Node2D" parent="."]

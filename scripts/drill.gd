@@ -126,7 +126,7 @@ func _attack() -> void:
 	var b := terrain.world_to_cell(r.end - Vector2(0.01, 0.01))
 	for y in range(a.y, b.y + 1):
 		for x in range(a.x, b.x + 1):
-			terrain.damage(Vector2i(x, y), attack_damage)
+			terrain.damage(Vector2i(x, y), attack_damage, true)
 	for node in get_tree().get_nodes_in_group("enemies"):
 		var enemy := node as Enemy
 		if enemy and enemy.rect().intersects(r):

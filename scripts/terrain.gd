@@ -5,6 +5,8 @@ extends Node2D
 ## tile is untouched dirt whose HP comes from the depth formula (TerrainProfile) or a
 ## LayerDef override. Visuals are placeholder rects.
 
+signal trinket_collected(def: TrinketDef)
+
 const TILE := 32
 const WIDTH := 60
 
@@ -12,12 +14,19 @@ const WIDTH := 60
 ## Optional hand-authored layers (name, colour, HP overrides), keyed by layer_index.
 @export var overrides: Array[LayerDef] = []
 
+## Trinkets that can be buried. Edit on the Terrain node in main.tscn.
+@export var trinket_defs: Array[TrinketDef] = []
+## Fraction of dirt tiles that hide a trinket.
+@export var trinket_chance := 0.008
+
+var _seed := 0
 var _override_by_layer := {}
 var _tiles := {} # Vector2i -> current HP (<= 0 means dug out)
 var _view := Rect2()
 
 
 func _ready() -> void:
+	_seed = randi()
 	for o in overrides:
 		_override_by_layer[o.layer_index] = o
 
@@ -60,14 +69,51 @@ func is_dirt(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.x < WIDTH and cell.y >= 0 and _hp_at(cell) > 0.0
 
 
-## Damages a dirt tile. Returns true if it broke.
-func damage(cell: Vector2i, amount: float) -> bool:
+## Damages a dirt tile. Returns true if it broke. Only the player's attacks pass
+## collect = true; a trinket in a tile broken by anything else is lost.
+func damage(cell: Vector2i, amount: float, collect := false) -> bool:
 	if not is_dirt(cell):
 		return false
 	var hp := maxf(_hp_at(cell) - amount, 0.0)
 	_tiles[cell] = hp
 	queue_redraw()
-	return hp <= 0.0
+	if hp > 0.0:
+		return false
+	if collect:
+		var trinket := trinket_at(cell)
+		if trinket:
+			trinket_collected.emit(trinket)
+	return true
+
+
+## The trinket buried in this tile, or null. Deterministic per run from the cell.
+func trinket_at(cell: Vector2i) -> TrinketDef:
+	if cell.y < 0 or cell.x < 0 or cell.x >= WIDTH or trinket_defs.is_empty():
+		return null
+	var h := _mix(cell.x * 73856093 ^ cell.y * 19349663 ^ _seed)
+	if (h % 100000) / 100000.0 >= trinket_chance:
+		return null
+	var layer := profile.layer_of(cell.y)
+	var total := 0.0
+	for t in trinket_defs:
+		if t.min_layer <= layer:
+			total += t.weight
+	if total <= 0.0:
+		return null
+	var roll := ((_mix(h) % 100000) / 100000.0) * total
+	for t in trinket_defs:
+		if t.min_layer > layer:
+			continue
+		roll -= t.weight
+		if roll <= 0.0:
+			return t
+	return null
+
+
+func _mix(x: int) -> int:
+	x = ((x >> 16) ^ x) * 0x45d9f3b & 0x7fffffff
+	x = ((x >> 16) ^ x) * 0x45d9f3b & 0x7fffffff
+	return (x >> 16) ^ x
 
 
 func world_to_cell(pos: Vector2) -> Vector2i:
@@ -94,3 +140,6 @@ func _draw() -> void:
 			if hp < full:
 				c = c.darkened(1.0 - hp / full)
 			draw_rect(Rect2(x * TILE, y * TILE, TILE, TILE), c)
+			var trinket := trinket_at(Vector2i(x, y))
+			if trinket:
+				draw_circle(Vector2(x + 0.5, y + 0.5) * TILE, TILE * 0.22, trinket.color)

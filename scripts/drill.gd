@@ -96,8 +96,19 @@ func _move_axis(offset: Vector2) -> void:
 	if offset == Vector2.ZERO:
 		return
 	var target := position + offset
-	if not _blocked(target):
+	if not _blocked(target) and not _hits_enemy(target):
 		position = target
+
+
+## True if moving to `center` would newly overlap an enemy (enemies are solid).
+func _hits_enemy(center: Vector2) -> bool:
+	var next := Rect2(center - _half, _half * 2.0)
+	var now := rect()
+	for e in get_tree().get_nodes_in_group("enemies"):
+		var er: Rect2 = e.rect()
+		if next.intersects(er) and not now.intersects(er):
+			return true
+	return false
 
 
 func _blocked(center: Vector2) -> bool:

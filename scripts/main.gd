@@ -32,9 +32,11 @@ var _trinket_value := 0
 
 func _ready() -> void:
 	drill.terrain = terrain
-	# Start on the surface, centered, just above the dirt.
-	drill.position = Vector2(Terrain.WIDTH * Terrain.TILE * 0.5, -Terrain.TILE)
+	# Start parked on the ground line, matching the hub drill.
+	drill.position = Vector2(0.0, -12.0)
 	camera.position = drill.position
+	# Draw the first frame correctly so the scene change doesn't flash.
+	terrain.set_view(Rect2(camera.position - get_viewport_rect().size * 0.5, get_viewport_rect().size))
 	drill.died.connect(_on_player_died)
 	drill.xp_changed.connect(_update_hud)
 	drill.leveled_up.connect(_on_leveled_up)
@@ -76,8 +78,7 @@ func _try_spawn() -> void:
 		return
 	var angle := randf() * TAU
 	var pos := drill.position + Vector2.from_angle(angle) * spawn_distance
-	# Keep spawns underground and inside the world.
-	pos.x = clampf(pos.x, Terrain.TILE * 2.0, Terrain.WIDTH * Terrain.TILE - Terrain.TILE * 2.0)
+	# Keep spawns underground.
 	pos.y = maxf(pos.y, Terrain.TILE * 2.0)
 	var enemy: Enemy = ENEMY_SCENE.instantiate()
 	enemy.setup(enemy_defs.pick_random(), terrain, drill)

@@ -42,7 +42,7 @@ func _physics_process(delta: float) -> void:
 	var dir := (target.position - position).normalized()
 	_move_axis(Vector2(dir.x, 0.0) * def.speed * delta, delta)
 	_move_axis(Vector2(0.0, dir.y) * def.speed * delta, delta)
-	if rect().intersects(target.rect()):
+	if rect().grow(1.0).intersects(target.rect()): # touching counts
 		target.take_damage(def.contact_damage)
 	_flash = maxf(_flash - delta, 0.0)
 	queue_redraw()
@@ -52,6 +52,8 @@ func _move_axis(offset: Vector2, delta: float) -> void:
 	if offset == Vector2.ZERO:
 		return
 	var next := Rect2(rect().position + offset, rect().size)
+	if next.intersects(target.rect()):
+		return # solid: stop against the player instead of overlapping
 	var a := terrain.world_to_cell(next.position)
 	var b := terrain.world_to_cell(next.end - Vector2(0.01, 0.01))
 	var blocked := false
@@ -60,7 +62,7 @@ func _move_axis(offset: Vector2, delta: float) -> void:
 			var cell := Vector2i(x, y)
 			if terrain.is_solid(cell):
 				blocked = true
-				terrain.damage(cell, def.dig_dps * delta) # world walls ignore this
+				terrain.damage(cell, def.dig_dps * delta)
 	if not blocked:
 		position += offset
 

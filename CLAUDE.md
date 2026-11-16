@@ -10,3 +10,4 @@
 ## Git workflow
 - Never commit directly to `main` or `staging`. Always create a feature branch off `main` (or `staging`) and merge via PR.
 - Merges to `main` trigger `.github/workflows/build.yml`, which exports Linux/Windows builds and updates the rolling `latest` release. Keep `export_presets.cfg` committed.
+- Before committing changes to `export_presets.cfg`, check the diff for secrets (`script_encryption_key`, keystore/signing passwords) and absolute local paths (e.g. `/home/...`). Secrets belong in GitHub Actions secrets, never in the repo; keep paths relative.

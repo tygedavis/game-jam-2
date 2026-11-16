@@ -6,7 +6,7 @@ This is a self-imposed jam. Two people are learning game development: one is pri
 
 ## Pitch
 
-A 2D side-view roguelite with automatic attacks and level-up upgrade choices. You are a dog digging down through the earth to find buried trinkets while enemies attack you. The deeper you go, the harder the ground gets and the better the loot, so you have to upgrade to keep going.
+A 2D side-view roguelite with automatic attacks and level-up upgrade choices. You play a dog piloting a drill vehicle down through the earth to find buried trinkets while enemies attack you. The deeper you go, the harder the ground gets and the better the loot, so you have to upgrade to keep going.
 
 ## Core loop
 
@@ -20,20 +20,22 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 ## Systems
 
 ### Movement and digging
-- Side-view. The dog digs down and sideways (not freely in 8 directions).
+- The playable character is a **dog driving a drill vehicle**. The drill is what digs; the dog is the pilot. The vehicle is the player's on-screen avatar for the whole run.
+- Side-view. The drill digs down and sideways (not freely in 8 directions).
 - Terrain is destructible, and carved tunnels persist for the run.
-- **There is no dig button.** Digging and attacking are the same mechanism (see Combat): the dog's automatic attack digs when it hits dirt and damages when it hits an enemy. The player only steers; the attack does the rest.
+- **There is no dig button.** Digging and attacking are the same mechanism (see Combat): the drill's automatic attack digs when it hits dirt and damages when it hits an enemy. The player only steers; the attack does the rest.
 
 ### Depth layers and hard ground
 - The ground is divided into depth layers. Each deeper layer is harder to dig.
-- Hardness is a **soft block**: a layer can be effectively impassable until the dog's dig power is upgraded enough. This is what pushes the player back to the owner to upgrade.
+- Hardness is a **soft block**: a layer can be effectively impassable until the drill's dig power is upgraded enough. This is what pushes the player back to the owner to upgrade.
 - Layers also drive enemy types, trinket rarity, and visuals (to be defined).
 
 ### Combat
 - Attacks fire automatically; upgrades add or modify them.
 - **Attack = dig.** The same attack hits whatever is in its path: dirt takes damage against its layer hardness (and breaks, digging the tunnel), and enemies take damage. One system, one set of upgrade stats (damage, speed, reach, area), so a single upgrade improves both digging and fighting.
-- Because of this, dig power and attack power are tied together. A layer's hardness acts as a soft block when the dog's attack damage can't break it effectively. Keep this in mind when designing upgrades: some may affect only dirt or only enemies, but the base stats are shared.
-- Enemies come from the dirt and tunnels. **How they move through a side-view dig (burrowing, roaming carved tunnels, surface spawns) is an open question.**
+- Because of this, dig power and attack power are tied together. A layer's hardness acts as a soft block when the drill's attack damage can't break it effectively. Keep this in mind when designing upgrades: some may affect only dirt or only enemies, but the base stats are shared.
+- **Burrowers:** most enemies dig through the dirt toward the player. They tunnel through terrain themselves, so they can come from any direction, including through undisturbed ground.
+- **Tunnel dwellers:** some enemies live in pre-dug tunnels that exist before the player arrives and do something unique with them (behavior TBD, e.g. patrolling, ambushing, using the tunnel network as cover or shortcuts). These give each layer places that feel inhabited.
 - Enemies drop XP.
 
 ### Progression (two tiers)
@@ -45,8 +47,14 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - Returning voluntarily keeps all loot.
 - Dying has a **small penalty** (for example, losing a portion of unbanked trinkets or money). The exact penalty is TBD but must be mild, never a full wipe.
 
+### The surface (hub)
+- The area above ground works like a main menu you can walk around in. It is the game's home base, not a run.
+- It contains the **drill vehicle**: the dog gets into it to start a run. Starting the descent is when the run actually begins. On the surface the dog is on foot; in a run the dog is in the drill.
+- It contains the owner (below) and room for other things we add later (cosmetics, story beats, etc.).
+- Returning from a run puts the player back here.
+
 ### The owner (shop)
-- A character who accepts trinkets and money and provides permanent upgrades. Good spot for story and personality (the partner owns the narrative direction).
+- A character on the surface who accepts trinkets and money and provides permanent upgrades. Good spot for story and personality (the partner owns the narrative direction).
 
 ### Win condition
 - None for now. Treat it as an open-ended dig. Do not build a final depth or boss yet.
@@ -56,7 +64,11 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - Tone is still to be decided with the art partner.
 
 ## Open questions
-- Enemy behavior in a side-view dig (being taken to the art/story partner).
+- Enemy roster: which burrowers and tunnel dwellers exist, and what the tunnel dwellers do uniquely with pre-dug tunnels.
+- Whether pre-dug tunnels are part of every layer's generated terrain and how they are generated.
+- Whether owner upgrades are framed as drill upgrades, dog upgrades, or both (affects naming and art).
+- How the player triggers a return to the surface mid-run (walk up, item, button).
+- Other things the surface hub should contain.
 - Jam deadline and scope cutoff (not yet given).
 - Exact death penalty.
 - Weapon and upgrade list, trinket list, layer count, and names for each layer.

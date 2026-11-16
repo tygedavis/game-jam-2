@@ -6,3 +6,7 @@
 - Game vision and design decisions: `docs/game-design.md` (read before designing features; keep it updated).
 - Current work plan: `docs/prototype-plan.md`.
 - Layout: `scenes/`, `scripts/`, `assets/`, `addons/`. Main scene: `res://scenes/surface.tscn` (hub); a run is `res://scenes/main.tscn`.
+
+## Git workflow
+- Never commit directly to `main` or `staging`. Always create a feature branch off `main` (or `staging`) and merge via PR.
+- Merges to `main` trigger `.github/workflows/build.yml`, which exports Linux/Windows builds and updates the rolling `latest` release. Keep `export_presets.cfg` committed.

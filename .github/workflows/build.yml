@@ -1,0 +1,76 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  export:
+    name: Export ${{ matrix.preset }}
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.7.2
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - preset: Linux
+            dir: linux
+            artifact: game-jam-2-linux
+          - preset: Windows Desktop
+            dir: windows
+            artifact: game-jam-2-windows
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install export templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/4.7.2.stable ~/.local/share/godot/export_templates/4.7.2.stable || true
+
+      - name: Import project
+        run: godot --headless --import || true
+
+      - name: Export
+        run: |
+          mkdir -p build/${{ matrix.dir }}
+          godot --headless --export-release "${{ matrix.preset }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: build/${{ matrix.dir }}
+          retention-days: 30
+
+  release:
+    name: Publish rolling "latest" release
+    needs: export
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Package
+        run: |
+          mkdir dist
+          # upload-artifact drops the exec bit, so restore it and use tar.gz for Linux
+          chmod +x artifacts/game-jam-2-linux/game-jam-2.x86_64
+          tar -czf dist/game-jam-2-linux.tar.gz -C artifacts/game-jam-2-linux .
+          (cd artifacts/game-jam-2-windows && zip -r ../../dist/game-jam-2-windows.zip .)
+
+      - name: Replace latest release
+        run: |
+          gh release delete latest --cleanup-tag --yes || true
+          gh release create latest dist/* \
+            --target "${{ github.sha }}" \
+            --title "Latest build (${GITHUB_SHA::7})" \
+            --notes "Automatic build of \`main\` at ${{ github.sha }}." \
+            --prerelease

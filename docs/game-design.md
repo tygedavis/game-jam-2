@@ -6,12 +6,12 @@ This is a self-imposed jam. Two people are learning game development: one is pri
 
 ## Pitch
 
-A 2D side-view, Vampire Survivors-style roguelite. You are a dog digging down through the earth to find buried trinkets while enemies attack you. The deeper you go, the harder the ground gets and the better the loot, so you have to upgrade to keep going.
+A 2D side-view roguelite with automatic attacks and level-up upgrade choices. You are a dog digging down through the earth to find buried trinkets while enemies attack you. The deeper you go, the harder the ground gets and the better the loot, so you have to upgrade to keep going.
 
 ## Core loop
 
-1. **Dig** down and sideways through the ground, carving tunnels. Depth is the main axis of progress and risk.
-2. **Fight** enemies automatically (auto-attack weapons, as in Vampire Survivors). Enemies drop XP.
+1. **Dig** down and sideways through the ground, carving tunnels, by steering into dirt (the auto-attack does the digging). Depth is the main axis of progress and risk.
+2. **Fight** enemies automatically (the same auto-attack). Enemies drop XP.
 3. **Level up in-run** from XP and pick one of several offered upgrades (a choice, not random assignment).
 4. **Collect trinkets** (and money) buried in the ground.
 5. **Choose when to return** to the surface. The player decides when to go back; going back is a risk and reward call.
@@ -22,6 +22,7 @@ A 2D side-view, Vampire Survivors-style roguelite. You are a dog digging down th
 ### Movement and digging
 - Side-view. The dog digs down and sideways (not freely in 8 directions).
 - Terrain is destructible, and carved tunnels persist for the run.
+- **There is no dig button.** Digging and attacking are the same mechanism (see Combat): the dog's automatic attack digs when it hits dirt and damages when it hits an enemy. The player only steers; the attack does the rest.
 
 ### Depth layers and hard ground
 - The ground is divided into depth layers. Each deeper layer is harder to dig.
@@ -29,7 +30,9 @@ A 2D side-view, Vampire Survivors-style roguelite. You are a dog digging down th
 - Layers also drive enemy types, trinket rarity, and visuals (to be defined).
 
 ### Combat
-- Weapons fire automatically; upgrades add or modify them.
+- Attacks fire automatically; upgrades add or modify them.
+- **Attack = dig.** The same attack hits whatever is in its path: dirt takes damage against its layer hardness (and breaks, digging the tunnel), and enemies take damage. One system, one set of upgrade stats (damage, speed, reach, area), so a single upgrade improves both digging and fighting.
+- Because of this, dig power and attack power are tied together. A layer's hardness acts as a soft block when the dog's attack damage can't break it effectively. Keep this in mind when designing upgrades: some may affect only dirt or only enemies, but the base stats are shared.
 - Enemies come from the dirt and tunnels. **How they move through a side-view dig (burrowing, roaming carved tunnels, surface spawns) is an open question.**
 - Enemies drop XP.
 
@@ -57,7 +60,8 @@ A 2D side-view, Vampire Survivors-style roguelite. You are a dog digging down th
 - Jam deadline and scope cutoff (not yet given).
 - Exact death penalty.
 - Weapon and upgrade list, trinket list, layer count, and names for each layer.
-- Controls (keyboard/mouse/gamepad) and how digging is triggered.
+- Controls (keyboard/mouse/gamepad). Digging has no trigger; open question is how attack direction is chosen: follows movement direction, follows the mouse/aim stick, or a mix (e.g. attacks the nearest thing in reach).
+- Whether extra weapons (beyond the dig attack) exist, and if they auto-target enemies only or can also break dirt.
 - Story and owner characterization.
 
 ## Guidance for agents

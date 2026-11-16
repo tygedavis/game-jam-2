@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "godot": {
+      "command": "container/run.sh",
+      "args": []
+    }
+  }
+}

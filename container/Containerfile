@@ -1,0 +1,24 @@
+FROM docker.io/library/node:22-bookworm-slim
+
+ARG GODOT_VERSION=4.7.2
+ARG GODOT_MCP_REF=1209744fad78f3998f98c7394fd0f6ef50da5281
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl unzip git libfontconfig1 libgl1 libxcursor1 libxi6 libxinerama1 libxrandr2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Godot (headless use; the editor binary is the same file)
+RUN curl -fsSL -o /tmp/godot.zip \
+      "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" \
+    && unzip -q /tmp/godot.zip -d /opt/godot \
+    && mv /opt/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot \
+    && rm -rf /tmp/godot.zip /opt/godot
+
+# Coding-Solo/godot-mcp pinned to a commit; npm only ever runs here.
+RUN git clone https://github.com/Coding-Solo/godot-mcp /opt/godot-mcp \
+    && cd /opt/godot-mcp && git checkout "${GODOT_MCP_REF}" \
+    && npm ci && npm run build
+
+ENV GODOT_PATH=/usr/local/bin/godot
+WORKDIR /workspace
+CMD ["node", "/opt/godot-mcp/build/index.js"]

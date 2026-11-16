@@ -138,7 +138,7 @@ func _on_player_died() -> void:
 
 func _on_retry() -> void:
 	get_tree().paused = false
-	get_tree().reload_current_scene()
+	get_tree().change_scene_to_file("res://scenes/surface.tscn")
 
 
 func _update_hud() -> void:

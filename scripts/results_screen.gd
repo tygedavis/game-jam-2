@@ -25,7 +25,7 @@ func _ready() -> void:
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(_label)
 	var button := Button.new()
-	button.text = "Dig again (Enter)"
+	button.text = "Return to surface (Enter)"
 	button.pressed.connect(func() -> void: retry.emit())
 	col.add_child(button)
 	button.grab_focus.call_deferred()

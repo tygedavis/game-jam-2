@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/terrain.gd" id="2"]
@@ -10,8 +10,12 @@
 [ext_resource type="Resource" path="res://data/layers/layer_1.tres" id="4"]
 [ext_resource type="Resource" path="res://data/layers/layer_2.tres" id="5"]
 
+[ext_resource type="Script" path="res://scripts/data/enemy_def.gd" id="9"]
+[ext_resource type="Resource" path="res://data/enemies/burrower.tres" id="10"]
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
+enemy_defs = Array[ExtResource("9")]([ExtResource("10")])
 
 [node name="Terrain" type="Node2D" parent="."]
 script = ExtResource("2")

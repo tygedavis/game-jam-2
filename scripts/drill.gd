@@ -14,14 +14,47 @@ extends Node2D
 ## Half-width of the attack, in pixels.
 @export var attack_area := 15.0
 
+signal died
+signal xp_changed
+
+@export var max_hp := 100.0
+## Seconds of invulnerability after taking a hit.
+@export var hit_cooldown := 0.6
+
 var terrain: Terrain
+var hp := 0.0
+var xp := 0.0
+var _invuln := 0.0
 var facing := Vector2i.DOWN
 var _half := Vector2(12, 12)
 var _attack_timer := 0.0
 var _flash := 0.0
 
 
+func _ready() -> void:
+	hp = max_hp
+
+
+func rect() -> Rect2:
+	return Rect2(position - _half, _half * 2.0)
+
+
+func take_damage(amount: float) -> void:
+	if _invuln > 0.0 or hp <= 0.0:
+		return
+	hp -= amount
+	_invuln = hit_cooldown
+	if hp <= 0.0:
+		died.emit()
+
+
+func gain_xp(amount: float) -> void:
+	xp += amount
+	xp_changed.emit()
+
+
 func _physics_process(delta: float) -> void:
+	_invuln = maxf(_invuln - delta, 0.0)
 	var input := _read_input()
 	if input != Vector2i.ZERO:
 		facing = input
@@ -83,12 +116,18 @@ func _attack() -> void:
 	for y in range(a.y, b.y + 1):
 		for x in range(a.x, b.x + 1):
 			terrain.damage(Vector2i(x, y), attack_damage)
-	# Enemies take damage from the same attack in milestone 3.
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var enemy := node as Enemy
+		if enemy and enemy.rect().intersects(r):
+			enemy.take_damage(attack_damage)
 
 
 func _draw() -> void:
 	# Placeholder visuals: body plus a drill nose showing the facing direction.
-	draw_rect(Rect2(-_half, _half * 2.0), Color(0.95, 0.75, 0.2))
+	var body := Color(0.95, 0.75, 0.2)
+	if _invuln > 0.0 and int(_invuln * 20.0) % 2 == 0:
+		body = Color(1, 1, 1, 0.5)
+	draw_rect(Rect2(-_half, _half * 2.0), body)
 	var nose := Vector2(facing) * (_half.x + 6.0)
 	draw_circle(nose, 6.0, Color(0.7, 0.7, 0.75))
 	if _flash > 0.0:

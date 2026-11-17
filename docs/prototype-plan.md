@@ -34,6 +34,11 @@ Each was playable and committed on its own.
 - Gem value is banked as money when a run ends (currently only on death, and all of it is kept: no penalty yet).
 - The owner stands on the surface (walk up, press Space). `MetaUpgradeDef` resources in `data/meta/` are listed on both `surface.tscn` (the shop stock) and `main.tscn` (applied at run start). Each level multiplies one drill stat; cost grows per level.
 
+## Layer barriers (done)
+- `Terrain` owns a barrier at each layer boundary (`barrier_thickness`, `barrier_hp_multiplier`, `barrier_payout_base`); broken ones are remembered for the run. The drill, shots and enemies are blocked by it; only the drill's digging and shots damage it.
+- Breaking one adds its payout to the run's gem value and triggers `BarrierEffects` (`scripts/barrier_effects.gd`). Spawns are clamped above the first unbroken barrier (`Terrain.clamp_spawn_y`).
+- Headless tests live in `tests/`; run each with `godot --headless --path . --script tests/<name>.gd`.
+
 ## Not yet built (vision items beyond the prototype)
 - Voluntary return to the surface mid-run, and a death penalty.
 - Tunnel-dweller enemies and pre-dug tunnels; enemy scaling with depth.

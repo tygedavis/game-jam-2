@@ -8,6 +8,10 @@ extends Node2D
 ## @tool so the editor shows a preview of each layer's tiles (see _draw_preview).
 
 signal gem_collected(def: GemDef)
+## A barrier took damage. `fraction` is its remaining HP (0..1); `at` is on the wall.
+signal barrier_hit(layer: int, fraction: float, at: Vector2)
+## A barrier broke. `payout` is the money it awards.
+signal barrier_broken(layer: int, payout: int, at: Vector2)
 
 const TILE := 32
 const SKY_COLOR := Color(0.55, 0.75, 0.9)
@@ -26,7 +30,16 @@ const PREVIEW_ROWS := 3
 ## Fraction of dirt tiles that hide a gem.
 @export var gem_chance := 0.008
 
+## Thickness of the wall between layers, in pixels. Centred on the layer boundary line.
+@export var barrier_thickness := 12.0
+## Barrier HP as a multiple of one tile's HP in the layer above it.
+@export var barrier_hp_multiplier := 15.0
+## Money for breaking the barrier into layer k is barrier_payout_base * k.
+@export var barrier_payout_base := 100
+
 var _seed := 0
+var _barriers_hp := {} # layer -> remaining HP (only barriers that have been hit)
+var _barriers_done := {} # layer -> true once broken
 var _override_by_layer := {}
 var _tiles := {} # Vector2i -> current HP (<= 0 means dug out)
 var _gem_hp := {} # Vector2i -> remaining gem durability (only gems that have been hit)
@@ -60,6 +73,68 @@ func layer_name(row: int) -> String:
 	var layer := profile.layer_of(row)
 	var o: LayerDef = _override_by_layer.get(layer)
 	return o.display_name if o else "Layer %d" % (layer + 1)
+
+
+## World y of the boundary between layer `layer - 1` and `layer` (where its barrier sits).
+func barrier_y(layer: int) -> float:
+	return float(layer * profile.layer_height * TILE)
+
+
+func barrier_max_hp(layer: int) -> float:
+	return barrier_hp_multiplier * max_hp(layer * profile.layer_height - 1)
+
+
+func barrier_payout(layer: int) -> int:
+	return barrier_payout_base * layer
+
+
+## There is no barrier at the surface (layer 0), and a broken one never returns.
+func barrier_alive(layer: int) -> bool:
+	return layer >= 1 and not _barriers_done.has(layer)
+
+
+## Remaining HP of a barrier as a fraction (1 = untouched).
+func barrier_fraction(layer: int) -> float:
+	return _barriers_hp.get(layer, barrier_max_hp(layer)) / barrier_max_hp(layer)
+
+
+## Layer of an unbroken barrier overlapping `rect`, or -1.
+func barrier_layer_in_rect(rect: Rect2) -> int:
+	var span := float(profile.layer_height * TILE)
+	var half := barrier_thickness * 0.5
+	var first := maxi(floori((rect.position.y - half) / span), 1)
+	var last := floori((rect.end.y + half) / span)
+	for layer in range(first, last + 1):
+		if not barrier_alive(layer):
+			continue
+		var wall := Rect2(rect.position.x, barrier_y(layer) - half, rect.size.x, barrier_thickness)
+		if wall.intersects(rect):
+			return layer
+	return -1
+
+
+## Damages a barrier. Returns true if this broke it. Does nothing if it is gone.
+func damage_barrier(layer: int, amount: float, at_x: float) -> bool:
+	if not barrier_alive(layer):
+		return false
+	var left := maxf(_barriers_hp.get(layer, barrier_max_hp(layer)) - amount, 0.0)
+	_barriers_hp[layer] = left
+	var at := Vector2(at_x, barrier_y(layer))
+	queue_redraw()
+	if left > 0.0:
+		barrier_hit.emit(layer, left / barrier_max_hp(layer), at)
+		return false
+	_barriers_done[layer] = true
+	barrier_broken.emit(layer, barrier_payout(layer), at)
+	return true
+
+
+## World y of the first unbroken barrier strictly below `from_y`.
+func next_barrier_y(from_y: float) -> float:
+	var layer := maxi(floori(from_y / float(profile.layer_height * TILE)) + 1, 1)
+	while not barrier_alive(layer):
+		layer += 1
+	return barrier_y(layer)
 
 
 func _hp_at(cell: Vector2i) -> float:

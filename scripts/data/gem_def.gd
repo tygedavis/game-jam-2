@@ -25,10 +25,9 @@ extends Resource
 
 
 ## Draws this gem centred on `center` (placeholder dot if there is no sprite).
-func draw_at(canvas: CanvasItem, center: Vector2, tile_size: float, fraction := 1.0) -> void:
-	var shade := Color.WHITE.darkened(1.0 - fraction)
+func draw_at(canvas: CanvasItem, center: Vector2, tile_size: float) -> void:
 	if sprite == null:
-		canvas.draw_circle(center, tile_size * 0.22, color.darkened(1.0 - fraction))
+		canvas.draw_circle(center, tile_size * 0.22, color)
 		return
 	var frames := maxi(sprite_hframes * sprite_vframes, 1)
 	var frame := 0
@@ -36,4 +35,4 @@ func draw_at(canvas: CanvasItem, center: Vector2, tile_size: float, fraction := 
 		frame = int(Time.get_ticks_msec() / 1000.0 * sprite_fps) % frames
 	var cell := Vector2(sprite.get_width() / float(sprite_hframes), sprite.get_height() / float(sprite_vframes))
 	var src := Rect2(Vector2(frame % sprite_hframes, frame / sprite_hframes) * cell, cell)
-	canvas.draw_texture_rect_region(sprite, Rect2(center - cell * 0.5, cell), src, shade)
+	canvas.draw_texture_rect_region(sprite, Rect2(center - cell * 0.5, cell), src)

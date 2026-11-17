@@ -32,7 +32,7 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 
 ### Combat
 - Attacks fire automatically; upgrades add or modify them.
-- **Dig and attack are separate.** Digging is automatic on dirt contact (dirt takes damage against its layer hardness and breaks). The attack only hits enemies and is being moved to a mouse-aimed ranged attack (see GitHub issue #15); until then it still fires automatically. For now dig power is derived from the attack stats (damage / interval), so attack upgrades also speed up digging.
+- **Dig and attack are separate.** Digging is automatic on dirt contact (dirt takes damage against its layer hardness and breaks). The attack only hits enemies and is being moved to a mouse-aimed ranged attack; until then it still fires automatically. For now dig power is derived from the attack stats (damage / interval), so attack upgrades also speed up digging.
 - Because of this, dig power and attack power are still tied together. A layer's hardness acts as a soft block when the drill's attack damage can't break it effectively. Keep this in mind when designing upgrades: some may affect only dirt or only enemies, but the base stats are shared.
 - **Burrowers:** most enemies dig through the dirt toward the player. They tunnel through terrain themselves, so they can come from any direction, including through undisturbed ground.
 - **Tunnel dwellers:** some enemies live in pre-dug tunnels that exist before the player arrives and do something unique with them (behavior TBD, e.g. patrolling, ambushing, using the tunnel network as cover or shortcuts). These give each layer places that feel inhabited.

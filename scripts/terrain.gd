@@ -216,10 +216,10 @@ func _draw() -> void:
 			var gem := gem_at(cell)
 			if gem == null or _gems_done.has(cell):
 				continue
-			# A gem is drawn in its tile; once exposed it darkens as its durability drops.
+			# A gem is drawn in its tile; once exposed, a bar shows its remaining durability.
 			var frac := gem_fraction(cell)
 			var center := Vector2(x + 0.5, y + 0.5) * TILE
-			gem.draw_at(self, center, TILE, frac)
+			gem.draw_at(self, center, TILE)
 			if hp <= 0.0 and frac < 1.0:
 				draw_rect(Rect2(center + Vector2(-12, 12), Vector2(24.0 * frac, 3)), Color(0.4, 1.0, 0.5))
 

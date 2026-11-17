@@ -6,6 +6,8 @@ extends Node2D
 
 ## Tuning (start values, adjust by feel).
 const HIT_FLASH_TIME := 0.06
+## The flash is see-through so the wall's red damage tint stays visible underneath.
+const FLASH_MAX_ALPHA := 0.35
 const HIT_SHAKE_MIN := 1.0
 const HIT_SHAKE_MAX := 6.0
 const HIT_SHAKE_TIME := 0.15
@@ -55,16 +57,20 @@ func _draw() -> void:
 	var half_width := get_viewport_rect().size.x
 	var half := _terrain.barrier_thickness * 0.5
 	draw_rect(Rect2(_camera.position.x - half_width, _flash_y - half, half_width * 2.0, half * 2.0),
-		Color(1, 1, 1, _flash / HIT_FLASH_TIME))
+		Color(1, 1, 1, flash_alpha()))
+
+
+func flash_alpha() -> float:
+	return FLASH_MAX_ALPHA * _flash / HIT_FLASH_TIME
 
 
 ## The wall took a hit. `fraction` is its remaining HP (1 = untouched); shaking grows as it weakens.
 func on_hit(fraction: float, at: Vector2) -> void:
-	_flash = HIT_FLASH_TIME
-	_flash_y = at.y
 	_add_shake(lerpf(HIT_SHAKE_MIN, HIT_SHAKE_MAX, 1.0 - fraction), HIT_SHAKE_TIME)
-	if _spark_cooldown <= 0.0:
+	if _spark_cooldown <= 0.0: # digging hits every frame; flash and sparks are throttled together
 		_spark_cooldown = SPARK_INTERVAL
+		_flash = HIT_FLASH_TIME
+		_flash_y = at.y
 		_burst(at, 5, Color(1.0, 0.9, 0.5), 140.0, 0.3, Vector2(0, 300), 0.0)
 
 

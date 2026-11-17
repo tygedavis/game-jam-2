@@ -88,10 +88,8 @@ func _try_spawn() -> void:
 		return
 	if terrain.world_to_cell(drill.position).y < spawn_min_row:
 		return
-	var angle := randf() * TAU
-	var pos := drill.position + Vector2.from_angle(angle) * spawn_distance
-	# Keep spawns underground.
-	pos.y = terrain.clamp_spawn_y(pos.y, drill.position.y)
+	# Underground, and never on the far side of an unbroken barrier.
+	var pos := terrain.spawn_position(drill.position, randf() * TAU, spawn_distance)
 	var enemy: Enemy = ENEMY_SCENE.instantiate()
 	enemy.setup(enemy_defs.pick_random(), terrain, drill)
 	enemy.position = pos

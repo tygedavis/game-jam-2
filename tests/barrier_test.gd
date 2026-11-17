@@ -11,6 +11,7 @@ func _init() -> void:
 	test_damage_then_break_once()
 	test_next_barrier_y()
 	test_spawn_clamp()
+	test_spawn_position_stays_off_screen()
 	quit(1 if _failed else 0)
 
 
@@ -75,4 +76,14 @@ func test_spawn_clamp() -> void:
 	_check("spawn: still at least two tiles down", t.clamp_spawn_y(0.0, 100.0) == 64.0)
 	t.damage_barrier(1, t.barrier_max_hp(1), 0.0)
 	_check("spawn: limit moves down once the barrier breaks", t.clamp_spawn_y(5000.0, 100.0) == 2560.0 - 32.0)
+	t.free()
+
+
+func test_spawn_position_stays_off_screen() -> void:
+	var t := _terrain()
+	var player := Vector2(0.0, 1250.0) # digging just above barrier 1
+	for angle in [PI * 0.5, PI * 0.45, PI * 0.2, 0.0]:
+		var pos := t.spawn_position(player, angle, 700.0)
+		_check("spawn pos: above the barrier (angle %.2f)" % angle, pos.y <= 1280.0 - 32.0)
+		_check("spawn pos: far from the player (angle %.2f)" % angle, pos.distance_to(player) >= 600.0)
 	t.free()

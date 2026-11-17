@@ -135,6 +135,17 @@ func clamp_spawn_y(y: float, player_y: float) -> float:
 	return clampf(y, TILE * 2.0, next_barrier_y(player_y) - TILE)
 
 
+## Where an enemy spawns: `distance` px from the player at `angle`. If that is below the first
+## unbroken barrier, it is mirrored upward (so it keeps its distance, and stays off screen)
+## instead of being squashed onto the player's own height.
+func spawn_position(player: Vector2, angle: float, distance: float) -> Vector2:
+	var pos := player + Vector2.from_angle(angle) * distance
+	if pos.y > next_barrier_y(player.y) - TILE:
+		pos.y = player.y - (pos.y - player.y)
+	pos.y = clamp_spawn_y(pos.y, player.y)
+	return pos
+
+
 ## World y of the first unbroken barrier strictly below `from_y`.
 func next_barrier_y(from_y: float) -> float:
 	var layer := maxi(floori(from_y / float(profile.layer_height * TILE)) + 1, 1)

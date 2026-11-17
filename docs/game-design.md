@@ -31,8 +31,8 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - Layers also drive enemy types, gem rarity, and visuals (to be defined).
 
 ### Combat
-- Attacks fire automatically; upgrades add or modify them.
-- **Dig and attack are separate.** Digging is automatic on dirt contact (dirt takes damage against its layer hardness and breaks). The attack only hits enemies and is being moved to a mouse-aimed ranged attack; until then it still fires automatically. For now dig power is derived from the attack stats (damage / interval), so attack upgrades also speed up digging.
+- Attacking is player-issued: hold left click to fire projectiles toward the mouse cursor. Upgrades add or modify them.
+- **Dig and attack are separate.** Digging is automatic on dirt contact (dirt takes damage against its layer hardness and breaks). The attack is a ranged projectile aimed at the mouse cursor (hold left click); it hits the first enemy in its path and stops at solid dirt. For now dig power is derived from the attack stats (damage / interval), so attack upgrades also speed up digging.
 - Because of this, dig power and attack power are still tied together. A layer's hardness acts as a soft block when the drill's attack damage can't break it effectively. Keep this in mind when designing upgrades: some may affect only dirt or only enemies, but the base stats are shared.
 - **Burrowers:** most enemies dig through the dirt toward the player. They tunnel through terrain themselves, so they can come from any direction, including through undisturbed ground.
 - **Tunnel dwellers:** some enemies live in pre-dug tunnels that exist before the player arrives and do something unique with them (behavior TBD, e.g. patrolling, ambushing, using the tunnel network as cover or shortcuts). These give each layer places that feel inhabited.
@@ -72,7 +72,7 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - Jam deadline and scope cutoff (not yet given).
 - Exact death penalty.
 - Weapon and upgrade list, gem list, layer count, and names for each layer.
-- Controls beyond keyboard (mouse/gamepad). Digging has no trigger. For the prototype, attack direction follows the movement direction; revisit if it feels wrong.
+- Gamepad support (aiming would need a stick). Digging has no trigger; attacks are aimed with the mouse.
 - Whether extra weapons (beyond the dig attack) exist, and if they auto-target enemies only or can also break dirt.
 - Story and owner characterization.
 

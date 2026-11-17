@@ -6,7 +6,7 @@ extends Resource
 @export var display_name := "Upgrade"
 @export_multiline var description := ""
 ## Which Drill property to change.
-@export_enum("attack_damage", "attack_interval", "attack_reach", "speed") var property := "attack_damage"
+@export_enum("attack_damage", "attack_interval", "speed") var property := "attack_damage"
 ## The property is multiplied by this (e.g. 1.3 = +30%; 0.85 on attack_interval = faster attacks).
 @export var multiplier := 1.25
 

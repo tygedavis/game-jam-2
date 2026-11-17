@@ -18,7 +18,6 @@
 [ext_resource type="Script" path="res://scripts/data/upgrade_def.gd" id="11"]
 [ext_resource type="Resource" path="res://data/upgrades/attack_damage.tres" id="12"]
 [ext_resource type="Resource" path="res://data/upgrades/attack_speed.tres" id="13"]
-[ext_resource type="Resource" path="res://data/upgrades/attack_reach.tres" id="14"]
 [ext_resource type="Resource" path="res://data/upgrades/move_speed.tres" id="15"]
 
 [ext_resource type="Script" path="res://scripts/data/gem_def.gd" id="16"]
@@ -29,14 +28,13 @@
 [ext_resource type="Script" path="res://scripts/data/meta_upgrade_def.gd" id="mscript"]
 [ext_resource type="Resource" path="res://data/meta/hard_bit.tres" id="m0"]
 [ext_resource type="Resource" path="res://data/meta/quick_motor.tres" id="m1"]
-[ext_resource type="Resource" path="res://data/meta/long_bit.tres" id="m2"]
 [ext_resource type="Resource" path="res://data/meta/big_engine.tres" id="m3"]
 [ext_resource type="Resource" path="res://data/meta/armor_plating.tres" id="m4"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
-upgrade_defs = Array[ExtResource("11")]([ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15")])
-meta_upgrades = Array[ExtResource("mscript")]([ExtResource("m0"), ExtResource("m1"), ExtResource("m2"), ExtResource("m3"), ExtResource("m4")])
+upgrade_defs = Array[ExtResource("11")]([ExtResource("12"), ExtResource("13"), ExtResource("15")])
+meta_upgrades = Array[ExtResource("mscript")]([ExtResource("m0"), ExtResource("m1"), ExtResource("m3"), ExtResource("m4")])
 enemy_defs = Array[ExtResource("9")]([ExtResource("10")])
 
 [node name="Terrain" type="Node2D" parent="."]

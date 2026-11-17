@@ -33,11 +33,13 @@ func test_geometry() -> void:
 	_check("geometry: no barrier at the surface", t.barrier_layer_in_rect(Rect2(0, 0, 10, 10)) == -1)
 	t.free()
 
+
 func test_hp_and_payout() -> void:
 	var t := _terrain()
 	_check("hp: 15x the tile HP of the layer above", is_equal_approx(t.barrier_max_hp(1), 15.0 * t.max_hp(39)))
 	_check("payout: base * layer", t.barrier_payout(2) == 200)
 	t.free()
+
 
 func test_damage_then_break_once() -> void:
 	var t := _terrain()
@@ -55,6 +57,7 @@ func test_damage_then_break_once() -> void:
 	_check("damage: no longer alive", not t.barrier_alive(1))
 	_check("damage: no longer collides", t.barrier_layer_in_rect(Rect2(0, 1280 - 6, 10, 12)) == -1)
 	t.free()
+
 
 func test_next_barrier_y() -> void:
 	var t := _terrain()

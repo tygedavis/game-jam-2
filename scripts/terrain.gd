@@ -303,6 +303,25 @@ func _draw() -> void:
 			gem.draw_at(self, center, TILE)
 			if hp <= 0.0 and frac < 1.0:
 				draw_rect(Rect2(center + Vector2(-12, 12), Vector2(24.0 * frac, 3)), Color(0.4, 1.0, 0.5))
+	_draw_barriers()
+
+
+## Draws every unbroken barrier in view as a full-width metal plate; damage tints it toward red.
+func _draw_barriers() -> void:
+	var span := float(profile.layer_height * TILE)
+	var half := barrier_thickness * 0.5
+	var first := maxi(floori((_view.position.y - half) / span), 1)
+	var last := floori((_view.end.y + half) / span)
+	for layer in range(first, last + 1):
+		if not barrier_alive(layer):
+			continue
+		var damaged := 1.0 - barrier_fraction(layer)
+		var plate := Color(0.62, 0.64, 0.7).lerp(Color(0.85, 0.2, 0.15), damaged)
+		var left := _view.position.x - TILE
+		var wall := Rect2(left, barrier_y(layer) - half, _view.size.x + TILE * 2, barrier_thickness)
+		draw_rect(wall, plate)
+		draw_rect(Rect2(wall.position, Vector2(wall.size.x, 2.0)), plate.lightened(0.45)) # highlight
+		draw_rect(Rect2(wall.position + Vector2(0, wall.size.y - 2.0), Vector2(wall.size.x, 2.0)), plate.darkened(0.45))
 
 
 ## Editor-only preview: the real terrain is generated while playing, so show a sample of each of the

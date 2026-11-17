@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="UpgradeItemDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/upgrade_item_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Turbo Tread"
+description = "+move speed per stack"
+property = "speed"
+color = Color(0.4, 0.9, 0.4, 1)

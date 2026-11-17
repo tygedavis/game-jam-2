@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="UpgradeItemDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/upgrade_item_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Fast Gears"
+description = "+attack speed per stack"
+property = "attack_interval"
+color = Color(0.3, 0.8, 0.9, 1)

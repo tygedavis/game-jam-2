@@ -5,6 +5,8 @@ const PATH := "user://save.json"
 
 var money := 0
 var levels := {} # MetaUpgradeDef.id() -> purchased level
+var unlocked: Array = [] # UpgradeItemDef.id() of items unlocked at the shop (issue #38)
+var item_levels := {} # UpgradeItemDef.id() -> shop upgrade level
 
 
 func _ready() -> void:
@@ -36,6 +38,14 @@ func buy(def: MetaUpgradeDef) -> bool:
 	return true
 
 
+func is_unlocked(def: UpgradeItemDef) -> bool:
+	return def.default_unlocked or unlocked.has(def.id())
+
+
+func item_level_of(def: UpgradeItemDef) -> int:
+	return item_levels.get(def.id(), 0)
+
+
 func bank(amount: int) -> void:
 	money += amount
 	save_game()
@@ -50,7 +60,7 @@ func apply_to(drill: Drill, defs: Array[MetaUpgradeDef]) -> void:
 func save_game() -> void:
 	var f := FileAccess.open(PATH, FileAccess.WRITE)
 	if f:
-		f.store_string(JSON.stringify({"money": money, "levels": levels}))
+		f.store_string(JSON.stringify({"money": money, "levels": levels, "unlocked": unlocked, "item_levels": item_levels}))
 
 
 func load_game() -> void:
@@ -62,3 +72,9 @@ func load_game() -> void:
 		levels = {}
 		for k in data.get("levels", {}):
 			levels[k] = int(data["levels"][k])
+		unlocked = []
+		for id in data.get("unlocked", []):
+			unlocked.append(str(id))
+		item_levels = {}
+		for k in data.get("item_levels", {}):
+			item_levels[k] = int(data["item_levels"][k])

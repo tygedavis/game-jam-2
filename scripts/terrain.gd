@@ -8,6 +8,7 @@ extends Node2D
 ## @tool so the editor shows a preview of each layer's tiles (see _draw_preview).
 
 signal gem_collected(def: GemDef)
+signal upgrade_collected(def: UpgradeItemDef)
 ## A barrier took damage. `fraction` is its remaining HP (0..1); `at` is on the wall.
 signal barrier_hit(layer: int, fraction: float, at: Vector2)
 ## A barrier broke. `payout` is the money it awards.
@@ -29,6 +30,12 @@ const PREVIEW_ROWS := 3
 @export var gem_defs: Array[GemDef] = []
 ## Fraction of dirt tiles that hide a gem.
 @export var gem_chance := 0.008
+## Upgrade items that can be buried. Main fills this with the unlocked items at run start.
+@export var upgrade_defs: Array[UpgradeItemDef] = []
+## Fraction of dirt tiles that hide an upgrade item.
+@export var upgrade_chance := 0.004
+## Ids of items the player has maxed this run; they stop spawning (other tiles are unaffected).
+var capped_upgrade_ids := {}
 
 ## Thickness of the wall between layers, in pixels. Centred on the layer boundary line.
 @export var barrier_thickness := 12.0
@@ -199,6 +206,10 @@ func damage(cell: Vector2i, amount: float, collect := false) -> bool:
 		var hp := maxf(_hp_at(cell) - amount, 0.0)
 		_tiles[cell] = hp
 		queue_redraw()
+		if hp <= 0.0 and collect:
+			var upgrade := upgrade_at(cell)
+			if upgrade:
+				upgrade_collected.emit(upgrade)
 		return hp <= 0.0
 	if not collect or not gem_exposed(cell):
 		return false
@@ -234,6 +245,32 @@ func gem_at(cell: Vector2i) -> GemDef:
 		roll -= t.weight
 		if roll <= 0.0:
 			return t
+	return null
+
+
+## The upgrade item buried in this tile, or null. Deterministic per run from the cell. It is
+## collected when the player breaks the tile's dirt. The pick ignores the capped set so other tiles
+## keep their items; a capped pick just returns null.
+func upgrade_at(cell: Vector2i) -> UpgradeItemDef:
+	if cell.y < 0 or upgrade_defs.is_empty():
+		return null
+	var h := _mix(cell.x * 83492791 ^ cell.y * 297121507 ^ _seed ^ 0x5bd1e995)
+	if (h % 100000) / 100000.0 >= upgrade_chance:
+		return null
+	var layer := profile.layer_of(cell.y)
+	var total := 0.0
+	for u in upgrade_defs:
+		if u.min_layer <= layer:
+			total += u.weight
+	if total <= 0.0:
+		return null
+	var roll := ((_mix(h) % 100000) / 100000.0) * total
+	for u in upgrade_defs:
+		if u.min_layer > layer:
+			continue
+		roll -= u.weight
+		if roll <= 0.0:
+			return null if capped_upgrade_ids.has(u.id()) else u
 	return null
 
 
@@ -305,6 +342,10 @@ func _draw() -> void:
 			var hp := _hp_at(cell)
 			if hp > 0.0:
 				_draw_dirt(x, y, hp / full) # damaged tiles darken so progress is visible
+				var upgrade := upgrade_at(cell)
+				if upgrade:
+					var spot := Vector2(x + 0.5, y + 0.5) * TILE + (Vector2(6, 6) if gem_at(cell) else Vector2.ZERO)
+					draw_rect(Rect2(spot - Vector2(5, 5), Vector2(10, 10)), upgrade.color)
 			var gem := gem_at(cell)
 			if gem == null or _gems_done.has(cell):
 				continue

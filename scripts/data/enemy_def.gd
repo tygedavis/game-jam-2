@@ -10,8 +10,6 @@ extends Resource
 @export var contact_damage := 10.0
 ## Damage per second dealt to dirt in its way (how fast it burrows).
 @export var dig_dps := 40.0
-## XP dropped on death.
-@export var xp := 5.0
 ## Art. Drag a PNG here (static image or sprite sheet). Draw it facing RIGHT; the game flips it.
 ## If empty, a coloured square is drawn instead.
 @export var sprite: Texture2D

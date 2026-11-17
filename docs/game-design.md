@@ -6,16 +6,16 @@ This is a self-imposed jam. Two people are learning game development: one is pri
 
 ## Pitch
 
-A 2D side-view roguelite with automatic attacks and level-up upgrade choices. You play a dog piloting a drill vehicle down through the earth to find buried gems while enemies attack you. The deeper you go, the harder the ground gets and the better the loot, so you have to upgrade to keep going.
+A 2D side-view roguelite with upgrade items found buried in the ground. You play a dog piloting a drill vehicle down through the earth to find buried gems while enemies attack you. The deeper you go, the harder the ground gets and the better the loot, so you have to find upgrades to keep going.
 
 ## Core loop
 
 1. **Dig** down and sideways through the ground, carving tunnels, by steering into dirt (digging is automatic on contact). Depth is the main axis of progress and risk.
-2. **Fight** enemies automatically (the same auto-attack). Enemies drop XP.
-3. **Level up in-run** from XP and pick one of several offered upgrades (a choice, not random assignment).
+2. **Fight** enemies by shooting them.
+3. **Find upgrade items** buried in the ground. Breaking the tile collects the item and adds one stack of its buff for the rest of the run.
 4. **Collect gems** (and money) buried in the ground.
 5. **Choose when to return** to the surface. The player decides when to go back; going back is a risk and reward call.
-6. **Visit the owner (shop)** and spend gems and money on permanent upgrades. Then dig again, able to go deeper.
+6. **Visit the owner (shop)** and spend gems and money to unlock upgrade items and strengthen their buffs. Then dig again, able to go deeper.
 
 ## Systems
 
@@ -38,11 +38,11 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - Because of this, dig power and attack power are still tied together. A layer's hardness acts as a soft block when the drill's attack damage can't break it effectively. Keep this in mind when designing upgrades: some may affect only dirt or only enemies, but the base stats are shared.
 - **Burrowers:** most enemies dig through the dirt toward the player. They tunnel through terrain themselves, so they can come from any direction, including through undisturbed ground.
 - **Tunnel dwellers:** some enemies live in pre-dug tunnels that exist before the player arrives and do something unique with them (behavior TBD, e.g. patrolling, ambushing, using the tunnel network as cover or shortcuts). These give each layer places that feel inhabited.
-- Enemies drop XP.
 
 ### Progression (two tiers)
-- **In-run:** XP from enemies leads to a level-up, which offers a choice of upgrades. This resets each run.
-- **Permanent (meta):** gems and money are brought to the owner for upgrades that persist across runs.
+- **Baseline:** the drill's own stats (e.g. attack damage) are fixed and intentionally weak. This pushes the player to explore for upgrade items instead of buying their way down.
+- **In-run (upgrade items):** found buried in the dirt. Each item is a percentage buff to one stat (e.g. +2% attack damage). Finding more of the same item adds a stack. Buffs add up (5 stacks at +2% is +10%, not compounded); for attack interval the buff means faster attacks. Each item has its own stack cap (5 for now). Stacks reset every run. Only unlocked items can appear.
+- **Permanent (meta, being reworked):** the owner unlocks items so they can spawn, and each shop upgrade raises that item's per-stack buff (e.g. 2% to 4%). The unlocked set and each item's shop level are saved. Until the shop supports this, the old stat-boost shop remains and items marked `default_unlocked` count as unlocked.
 
 ### Run end and death
 - A run ends when the player chooses to return to the surface, or when they die.
@@ -56,7 +56,7 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - Returning from a run puts the player back here.
 
 ### The owner (shop)
-- A character on the surface who accepts gems and money and provides permanent upgrades. Good spot for story and personality (the partner owns the narrative direction).
+- A character on the surface who accepts gems and money. The owner unlocks upgrade items (so they can appear in the ground) and strengthens their per-stack buffs permanently. Until then the old stat-boost shop remains. Good spot for story and personality (the partner owns the narrative direction).
 
 ### Win condition
 - None for now. Treat it as an open-ended dig. Do not build a final depth or boss yet.
@@ -75,7 +75,7 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - Exact death penalty.
 - An upgrade related to moving up layers (deferred: needs a return-to-surface mechanic first).
 - Barrier tuning: HP multiple, payout per layer, and whether broken barriers should ever persist across runs.
-- Weapon and upgrade list, gem list, layer count, and names for each layer.
+- The upgrade item list (stats, buff sizes, caps, prices), weapon list, gem list, layer count, and names for each layer.
 - Gamepad support (aiming would need a stick). Digging has no trigger; attacks are aimed with the mouse.
 - Whether extra weapons (beyond the dig attack) exist, and if they auto-target enemies only or can also break dirt.
 - Story and owner characterization.

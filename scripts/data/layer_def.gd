@@ -2,7 +2,7 @@
 class_name LayerDef
 extends Resource
 ## Optional hand-authored override for one depth layer (name, colour, HP, later: enemies,
-## trinkets, art). Layers without an override use the TerrainProfile formula.
+## gems, art). Layers without an override use the TerrainProfile formula.
 
 ## Which layer this overrides (0 = topmost).
 @export var layer_index := 0

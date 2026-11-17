@@ -1,12 +1,12 @@
 @tool
-class_name TrinketDef
+class_name GemDef
 extends Resource
-## A buried trinket. Add one by creating a TrinketDef .tres and listing it on the Terrain node.
+## A buried gem. Add one by creating a GemDef .tres and listing it on the Terrain node.
 
-@export var display_name := "Trinket"
+@export var display_name := "Gem"
 ## What it's worth (to the owner, later). Shown on the results screen.
 @export var value := 1
-## Relative chance among the trinkets available at a depth.
+## Relative chance among the gems available at a depth.
 @export var weight := 1.0
 ## Shallowest layer (0 = topsoil) where it can appear.
 @export var min_layer := 0
@@ -22,7 +22,7 @@ extends Resource
 @export var color := Color(0.9, 0.9, 0.9)
 
 
-## Draws this trinket centred on `center` (placeholder dot if there is no sprite).
+## Draws this gem centred on `center` (placeholder dot if there is no sprite).
 func draw_at(canvas: CanvasItem, center: Vector2, tile_size: float) -> void:
 	if sprite == null:
 		canvas.draw_circle(center, tile_size * 0.22, color)

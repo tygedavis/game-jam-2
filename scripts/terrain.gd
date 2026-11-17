@@ -7,7 +7,7 @@ extends Node2D
 ## LayerDef override. Dirt is drawn from tile textures (TerrainProfile / LayerDef), or flat colours if none.
 ## @tool so the editor shows a preview of each layer's tiles (see _draw_preview).
 
-signal trinket_collected(def: TrinketDef)
+signal gem_collected(def: GemDef)
 
 const TILE := 32
 const SKY_COLOR := Color(0.55, 0.75, 0.9)
@@ -21,10 +21,10 @@ const PREVIEW_ROWS := 3
 ## Optional hand-authored layers (name, colour, HP overrides), keyed by layer_index.
 @export var overrides: Array[LayerDef] = []
 
-## Trinkets that can be buried. Edit on the Terrain node in main.tscn.
-@export var trinket_defs: Array[TrinketDef] = []
-## Fraction of dirt tiles that hide a trinket.
-@export var trinket_chance := 0.008
+## Gems that can be buried. Edit on the Terrain node in main.tscn.
+@export var gem_defs: Array[GemDef] = []
+## Fraction of dirt tiles that hide a gem.
+@export var gem_chance := 0.008
 
 var _seed := 0
 var _override_by_layer := {}
@@ -75,7 +75,7 @@ func is_dirt(cell: Vector2i) -> bool:
 
 
 ## Damages a dirt tile. Returns true if it broke. Only the player's attacks pass
-## collect = true; a trinket in a tile broken by anything else is lost.
+## collect = true; a gem in a tile broken by anything else is lost.
 func damage(cell: Vector2i, amount: float, collect := false) -> bool:
 	if not is_dirt(cell):
 		return false
@@ -85,28 +85,28 @@ func damage(cell: Vector2i, amount: float, collect := false) -> bool:
 	if hp > 0.0:
 		return false
 	if collect:
-		var trinket := trinket_at(cell)
-		if trinket:
-			trinket_collected.emit(trinket)
+		var gem := gem_at(cell)
+		if gem:
+			gem_collected.emit(gem)
 	return true
 
 
-## The trinket buried in this tile, or null. Deterministic per run from the cell.
-func trinket_at(cell: Vector2i) -> TrinketDef:
-	if cell.y < 0 or trinket_defs.is_empty():
+## The gem buried in this tile, or null. Deterministic per run from the cell.
+func gem_at(cell: Vector2i) -> GemDef:
+	if cell.y < 0 or gem_defs.is_empty():
 		return null
 	var h := _mix(cell.x * 73856093 ^ cell.y * 19349663 ^ _seed)
-	if (h % 100000) / 100000.0 >= trinket_chance:
+	if (h % 100000) / 100000.0 >= gem_chance:
 		return null
 	var layer := profile.layer_of(cell.y)
 	var total := 0.0
-	for t in trinket_defs:
+	for t in gem_defs:
 		if t.min_layer <= layer:
 			total += t.weight
 	if total <= 0.0:
 		return null
 	var roll := ((_mix(h) % 100000) / 100000.0) * total
-	for t in trinket_defs:
+	for t in gem_defs:
 		if t.min_layer > layer:
 			continue
 		roll -= t.weight
@@ -183,13 +183,13 @@ func _draw() -> void:
 			if hp <= 0.0:
 				continue
 			_draw_dirt(x, y, hp / full) # damaged tiles darken so progress is visible
-			var trinket := trinket_at(Vector2i(x, y))
-			if trinket:
-				trinket.draw_at(self, Vector2(x + 0.5, y + 0.5) * TILE, TILE)
+			var gem := gem_at(Vector2i(x, y))
+			if gem:
+				gem.draw_at(self, Vector2(x + 0.5, y + 0.5) * TILE, TILE)
 
 
 ## Editor-only preview: the real terrain is generated while playing, so show a sample of each of the
-## first layers (a patch of tiles, with the layer name above) and a row of the trinkets.
+## first layers (a patch of tiles, with the layer name above) and a row of the gems.
 func _draw_preview() -> void:
 	if profile == null:
 		return
@@ -212,8 +212,8 @@ func _draw_preview() -> void:
 				_draw_dirt(x, first + y, 1.0)
 		draw_set_transform(Vector2.ZERO)
 		row += PREVIEW_ROWS + 1
-	draw_string(ThemeDB.fallback_font, Vector2(left * TILE, row * TILE - 4.0), "Trinkets (preview)",
+	draw_string(ThemeDB.fallback_font, Vector2(left * TILE, row * TILE - 4.0), "Gems (preview)",
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 14)
-	for i in trinket_defs.size():
-		if trinket_defs[i]:
-			trinket_defs[i].draw_at(self, Vector2(left + i + 0.5, row + 0.5) * TILE, TILE)
+	for i in gem_defs.size():
+		if gem_defs[i]:
+			gem_defs[i].draw_at(self, Vector2(left + i + 0.5, row + 0.5) * TILE, TILE)

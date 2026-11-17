@@ -1,8 +1,9 @@
 class_name Drill
 extends Node2D
 ## Player drill vehicle. Moves in four directions; blocked by dirt.
-## The auto-attack fires on a timer in the facing direction and damages dirt
-## (digging) and, later, enemies. Stats here are shared by both.
+## Digging is automatic: whenever the drill is steering into dirt it touches, it damages that
+## dirt continuously. The auto-attack (until the mouse attack replaces it) only hits enemies.
+## Dig power is derived from the attack stats, so attack upgrades also speed up digging.
 
 @export var speed := 180.0
 ## Seconds between attacks.
@@ -13,6 +14,8 @@ extends Node2D
 @export var attack_reach := 20.0
 ## Half-width of the attack, in pixels.
 @export var attack_area := 15.0
+## How close (px) the drill must be to dirt, in the steering direction, to dig it.
+@export var dig_contact := 4.0
 
 signal died
 signal xp_changed
@@ -77,6 +80,9 @@ func _physics_process(delta: float) -> void:
 	_move_axis(Vector2(step.x, 0))
 	_move_axis(Vector2(0, step.y))
 
+	if input != Vector2i.ZERO:
+		_dig(delta)
+
 	_attack_timer -= delta
 	if _attack_timer <= 0.0:
 		_attack_timer = attack_interval
@@ -134,18 +140,37 @@ func attack_rect() -> Rect2:
 	return Rect2(-attack_area, 0.0 if facing.y > 0 else -reach, attack_area * 2.0, reach)
 
 
+## Dirt damage per second while digging (same output as the old attack timer).
+func dig_power() -> float:
+	return attack_damage / attack_interval
+
+
+## Damages the dirt touching the drill's leading edge. Breaking a tile collects any gem in it.
+func _dig(delta: float) -> void:
+	var r := Rect2(position - _half, _half * 2.0)
+	if facing.x > 0:
+		r = Rect2(r.end.x, r.position.y, dig_contact, r.size.y)
+	elif facing.x < 0:
+		r = Rect2(r.position.x - dig_contact, r.position.y, dig_contact, r.size.y)
+	elif facing.y > 0:
+		r = Rect2(r.position.x, r.end.y, r.size.x, dig_contact)
+	else:
+		r = Rect2(r.position.x, r.position.y - dig_contact, r.size.x, dig_contact)
+	var a := terrain.world_to_cell(r.position)
+	var b := terrain.world_to_cell(r.end - Vector2(0.01, 0.01))
+	for y in range(a.y, b.y + 1):
+		for x in range(a.x, b.x + 1):
+			terrain.damage(Vector2i(x, y), dig_power() * delta, true)
+
+
 func _attack() -> void:
 	_flash = 0.08
 	var r := attack_rect()
 	r.position += position
 	var a := terrain.world_to_cell(r.position)
 	var b := terrain.world_to_cell(r.end - Vector2(0.01, 0.01))
-	# Enemies can only be hit up to the nearest solid dirt (checked before digging),
-	# so the attack can't reach through the ground.
+	# Enemies can only be hit up to the nearest solid dirt, so the attack can't reach through the ground.
 	var enemy_r := _clip_to_open(r, a, b)
-	for y in range(a.y, b.y + 1):
-		for x in range(a.x, b.x + 1):
-			terrain.damage(Vector2i(x, y), attack_damage, true)
 	for node in get_tree().get_nodes_in_group("enemies"):
 		var enemy := node as Enemy
 		if enemy and enemy.rect().intersects(enemy_r):

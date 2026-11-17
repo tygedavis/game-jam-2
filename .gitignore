@@ -5,3 +5,6 @@ export/
 
 # Superpowers plugin artifacts (plans/specs) are never committed
 /docs/superpowers/
+
+# Local export output
+/build/

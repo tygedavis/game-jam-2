@@ -106,6 +106,18 @@ func _move_axis(offset: Vector2) -> void:
 	var target := position + offset
 	if not _blocked(target) and not _hits_enemy(target):
 		position = target
+		return
+	# Blocked: creep up to the obstacle so we end flush against it. Otherwise a big step (speed
+	# upgrades, frame hitches) can stop us further away than `dig_contact`, and nothing gets dug.
+	var direction := offset.normalized()
+	var remaining := offset.length()
+	while remaining > 0.0:
+		var creep := minf(1.0, remaining)
+		var next := position + direction * creep
+		if _blocked(next) or _hits_enemy(next):
+			return
+		position = next
+		remaining -= creep
 
 
 ## True if moving to `center` would newly overlap an enemy (enemies are solid).

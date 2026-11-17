@@ -37,7 +37,8 @@ Each was playable and committed on its own.
 ## Layer barriers (done)
 - `Terrain` owns a barrier at each layer boundary (`barrier_thickness`, `barrier_hp_multiplier`, `barrier_payout_base`); broken ones are remembered for the run. The drill, shots and enemies are blocked by it; only the drill's digging and shots damage it.
 - Breaking one adds its payout to the run's gem value and triggers `BarrierEffects` (`scripts/barrier_effects.gd`). Spawns are clamped above the first unbroken barrier (`Terrain.clamp_spawn_y`).
-- Headless tests live in `tests/`; run each with `godot --headless --path . --script tests/<name>.gd`.
+- Headless tests live in `tests/`. Run them all with `tests/run_all.sh` (CI's `tests` job runs the same script), or one with `godot --headless --path . --script tests/<name>_test.gd`.
+- Test contract: `tests/**/*_test.gd`, `extends SceneTree`, print `PASS`/`FAIL` lines, `quit(1)` on failure. A test fails on a non-zero exit, a timeout (`TEST_TIMEOUT`, default 120s), any `FAIL` line, or no `PASS` line. New files are picked up automatically.
 
 ## Not yet built (vision items beyond the prototype)
 - Voluntary return to the surface mid-run, and a death penalty.

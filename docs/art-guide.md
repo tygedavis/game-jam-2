@@ -27,11 +27,11 @@ These nodes use `AutoSprite`, so both work the same way:
 | Dog on foot | `scenes/surface.tscn` > Dog | `dog.png` | Draw it **facing right**; the game flips it when walking left. |
 
 | Enemy | `data/enemies/burrower.tres` > **Sprite** | `burrower.png` (22x22) | Draw it **facing right**; the game flips it. Sheets: set Sprite Hframes / Vframes / Fps in the same file. |
-| Trinkets | `data/trinkets/bone.tres`, `coin.tres`, `fossil.tres`, `gem.tres` > **Sprite** | `trinket_*.png` (16x16) | Drawn centred in a 32x32 dirt tile at the art's own size. Sheets work the same way. |
+| Gems | `data/gems/bone.tres`, `coin.tres`, `fossil.tres`, `gem.tres` > **Sprite** | `trinket_*.png` (16x16) | Drawn centred in a 32x32 dirt tile at the art's own size. Sheets work the same way. |
 
-Enemies and trinkets live in data files, not scenes: double-click the `.tres` file, then drag the PNG onto
+Enemies and gems live in data files, not scenes: double-click the `.tres` file, then drag the PNG onto
 **Sprite** in the Inspector. There is no editor viewport preview for these; press **F5** and dig to see them
-(enemies spawn once you are a few rows deep). To add a new enemy or trinket, right-click an existing `.tres`
+(enemies spawn once you are a few rows deep). To add a new enemy or gem, right-click an existing `.tres`
 > Duplicate, change the fields, and ask the developer to list it in the scene.
 
 | Dirt tiles (all layers) | `data/terrain_profile.tres` > **Tile Texture** | `tile_dirt.png` (4 variants, 128x32) | Tiles are **32x32**. Draw it light/grey: the game tints it with each layer's colour, so every depth looks different. |
@@ -41,7 +41,7 @@ Enemies and trinkets live in data files, not scenes: double-click the `.tres` fi
 (e.g. a 128x32 image = 4). The game picks one at random per tile.
 
 **Preview:** open `scenes/main.tscn` and look near the origin. Under the Terrain node you'll see a sample
-patch of each of the first four layers, plus a row of the trinkets. It updates as you change textures.
+patch of each of the first four layers, plus a row of the gems. It updates as you change textures.
 (The real terrain is generated while playing, so the layout in the game differs.)
 
 Still coloured shapes in code: the sky and grass strip.

@@ -13,7 +13,7 @@ Answer one question: **is steering a drill that auto-digs and auto-fights, while
 - Movement is four-directional (one axis at a time). Controls: WASD or arrows; Space is always the interaction button.
 - Terrain is endless in depth. Tile HP comes from a formula (`TerrainProfile`: `base_hp * hp_growth ^ layer`), with optional hand-authored `LayerDef` overrides (name, colour, HP) for layers that need personality. Only damaged or dug tiles are stored.
 - Terrain is a script-drawn grid (not a `TileMapLayer`), so no tileset is needed. Tiles use textures from `TerrainProfile`/`LayerDef` (flat colour fallback); `terrain.gd` is `@tool` and draws a layer preview in the editor.
-- Only the player's attacks collect trinkets. A trinket in a tile broken by an enemy is lost.
+- Only the player's digging collects gems. A gem has its own durability and is exposed once the dirt around it is gone; enemies dig dirt only and never affect gems.
 - Dying shows a results screen, then returns to the surface.
 
 ## Milestones
@@ -23,7 +23,7 @@ Each was playable and committed on its own.
 2. **Auto-attack is dig** (done). Timer-based attack in the facing direction shared by digging and fighting (damage, interval, reach, area). Tile HP by depth layer, so deeper ground soft-blocks the drill.
 3. **Burrowing enemy** (done). `EnemyDef`-driven burrower spawns off screen, tunnels toward the drill, deals contact damage, takes damage from the auto-attack, drops XP. Player has HP.
 4. **Level-up choice** (done). XP bar; each level pauses and offers three random `UpgradeDef`s (attack damage, attack speed, reach, move speed).
-5. **Trinkets and depth** (done). Buried `TrinketDef`s (rarer and more valuable deeper), depth and trinket HUD, results screen on death.
+5. **Gems and depth** (done). Buried `GemDef`s (rarer and more valuable deeper), depth and gem HUD, results screen on death.
 6. **Stretch**
    - Minimal surface scene with a start prompt (done).
    - Persistent wallet, owner and shop with permanent upgrades (done, see below).
@@ -31,7 +31,7 @@ Each was playable and committed on its own.
 
 ## Meta-progression (done)
 - `Save` autoload (`scripts/save.gd`) holds money and purchased upgrade levels in `user://save.json`.
-- Trinket value is banked as money when a run ends (currently only on death, and all of it is kept: no penalty yet).
+- Gem value is banked as money when a run ends (currently only on death, and all of it is kept: no penalty yet).
 - The owner stands on the surface (walk up, press Space). `MetaUpgradeDef` resources in `data/meta/` are listed on both `surface.tscn` (the shop stock) and `main.tscn` (applied at run start). Each level multiplies one drill stat; cost grows per level.
 
 ## Not yet built (vision items beyond the prototype)
@@ -39,6 +39,6 @@ Each was playable and committed on its own.
 - Tunnel-dweller enemies and pre-dug tunnels; enemy scaling with depth.
 
 ## Structure
-- Content as Godot `Resource` files so it can be added without code changes: `scripts/data/` for the definitions (`LayerDef`, `TerrainProfile`, `EnemyDef`, `UpgradeDef`, `TrinketDef`), `data/` for the `.tres` instances.
+- Content as Godot `Resource` files so it can be added without code changes: `scripts/data/` for the definitions (`LayerDef`, `TerrainProfile`, `EnemyDef`, `UpgradeDef`, `GemDef`), `data/` for the `.tres` instances.
 - `scenes/` for entities and screens (`surface.tscn` is the main scene; `main.tscn` is a run), `scripts/` for systems.
 - Keep visuals separate from logic so placeholder shapes can be swapped for sprites. Characters are `AutoSprite` nodes (`scripts/auto_sprite.gd`) in the scenes; see `docs/art-guide.md`.

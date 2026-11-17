@@ -1,5 +1,6 @@
-[gd_resource type="Resource" script_class="TerrainProfile" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="TerrainProfile" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://assets/sprites/tile_dirt.png" id="tex"]
 [ext_resource type="Script" path="res://scripts/data/terrain_profile.gd" id="1"]
 
 [resource]
@@ -10,3 +11,5 @@ hp_growth = 1.8
 base_color = Color(0.55, 0.36, 0.2, 1)
 hue_step = 0.07
 darken_per_layer = 0.04
+tile_texture = ExtResource("tex")
+tile_variants = 4

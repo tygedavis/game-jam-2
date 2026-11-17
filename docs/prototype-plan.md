@@ -12,7 +12,7 @@ Answer one question: **is steering a drill that auto-digs and auto-fights, while
 - Attack direction follows the drill's movement direction (single input, easy to change later).
 - Movement is four-directional (one axis at a time). Controls: WASD or arrows; Space is always the interaction button.
 - Terrain is endless in depth. Tile HP comes from a formula (`TerrainProfile`: `base_hp * hp_growth ^ layer`), with optional hand-authored `LayerDef` overrides (name, colour, HP) for layers that need personality. Only damaged or dug tiles are stored.
-- Terrain is a script-drawn grid (not a `TileMapLayer`), so no tileset is needed; swap to tiles when art arrives.
+- Terrain is a script-drawn grid (not a `TileMapLayer`), so no tileset is needed. Tiles use textures from `TerrainProfile`/`LayerDef` (flat colour fallback); `terrain.gd` is `@tool` and draws a layer preview in the editor.
 - Only the player's attacks collect trinkets. A trinket in a tile broken by an enemy is lost.
 - Dying shows a results screen, then returns to the surface.
 

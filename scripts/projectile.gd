@@ -1,23 +1,24 @@
 class_name Projectile
 extends Node2D
 ## A shot fired by the drill. Flies in a straight line, damages the first enemy it touches, and
-## stops at solid dirt or after travelling `max_distance`. Call setup() before adding to the tree.
+## stops at solid dirt. It has no gameplay range; it is only cleaned up once far off screen.
+## Call setup() before adding to the tree.
 
 const RADIUS := 4.0
+## Housekeeping only: free shots that have flown this far, so strays don't live forever.
+const CLEANUP_DISTANCE := 4000.0
 
 var terrain: Terrain
 var velocity := Vector2.ZERO
 var damage := 0.0
-var max_distance := 0.0
 var _travelled := 0.0
 
 
-func setup(ground: Terrain, from: Vector2, direction: Vector2, shot_speed: float, shot_damage: float, shot_range: float) -> void:
+func setup(ground: Terrain, from: Vector2, direction: Vector2, shot_speed: float, shot_damage: float) -> void:
 	terrain = ground
 	position = from
 	velocity = direction.normalized() * shot_speed
 	damage = shot_damage
-	max_distance = shot_range
 
 
 func _physics_process(delta: float) -> void:
@@ -28,7 +29,7 @@ func _physics_process(delta: float) -> void:
 	for i in steps:
 		position += step
 		_travelled += step.length()
-		if _hit_something() or _travelled >= max_distance:
+		if _hit_something() or _travelled >= CLEANUP_DISTANCE:
 			queue_free()
 			return
 

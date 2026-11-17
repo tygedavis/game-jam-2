@@ -10,8 +10,6 @@ extends Node2D
 @export var attack_interval := 0.4
 ## Damage per attack.
 @export var attack_damage := 10.0
-## How far a projectile travels before it fades, in pixels.
-@export var attack_reach := 260.0
 ## Projectile speed, in pixels per second.
 @export var projectile_speed := 600.0
 ## How close (px) the drill must be to dirt, in the steering direction, to dig it.
@@ -173,7 +171,7 @@ func _attack() -> void:
 	if direction.is_zero_approx():
 		direction = Vector2(facing)
 	var shot := Projectile.new()
-	shot.setup(terrain, position, direction, projectile_speed, attack_damage, attack_reach)
+	shot.setup(terrain, position, direction, projectile_speed, attack_damage)
 	get_parent().add_child(shot)
 
 

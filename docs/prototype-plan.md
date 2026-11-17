@@ -9,7 +9,7 @@ Answer one question: **is steering a drill that auto-digs and fires at the mouse
 - The game boots to a minimal surface scene; walk the dog to the drill and press Space to start a run. The shop and meta-progression come after the prototype.
 
 ## Decisions
-- Attack is a mouse-aimed projectile fired while left click is held (`Projectile`); `attack_reach` is its range. Digging is automatic and separate.
+- Attack is a mouse-aimed projectile fired while left click is held (`Projectile`); it has no range limit (add one if it proves necessary). Digging is automatic and separate.
 - Movement is four-directional (one axis at a time). Controls: WASD or arrows; Space is always the interaction button.
 - Terrain is endless in depth. Tile HP comes from a formula (`TerrainProfile`: `base_hp * hp_growth ^ layer`), with optional hand-authored `LayerDef` overrides (name, colour, HP) for layers that need personality. Only damaged or dug tiles are stored.
 - Terrain is a script-drawn grid (not a `TileMapLayer`), so no tileset is needed. Tiles use textures from `TerrainProfile`/`LayerDef` (flat colour fallback); `terrain.gd` is `@tool` and draws a layer preview in the editor.
@@ -20,9 +20,9 @@ Answer one question: **is steering a drill that auto-digs and fires at the mouse
 Each was playable and committed on its own.
 
 1. **Drill and terrain** (done). Destructible dirt grid; drill that moves and steers in side view.
-2. **Auto-attack is dig** (done). Timer-based attack in the facing direction shared by digging and fighting (damage, interval, reach, area). Tile HP by depth layer, so deeper ground soft-blocks the drill.
+2. **Auto-attack is dig** (done). Timer-based attack in the facing direction shared by digging and fighting (damage, interval). Tile HP by depth layer, so deeper ground soft-blocks the drill.
 3. **Burrowing enemy** (done). `EnemyDef`-driven burrower spawns off screen, tunnels toward the drill, deals contact damage, takes damage from the auto-attack, drops XP. Player has HP.
-4. **Level-up choice** (done). XP bar; each level pauses and offers three random `UpgradeDef`s (attack damage, attack speed, reach, move speed).
+4. **Level-up choice** (done). XP bar; each level pauses and offers three random `UpgradeDef`s (attack damage, attack speed, move speed).
 5. **Gems and depth** (done). Buried `GemDef`s (rarer and more valuable deeper), depth and gem HUD, results screen on death.
 6. **Stretch**
    - Minimal surface scene with a start prompt (done).

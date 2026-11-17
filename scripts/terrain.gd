@@ -147,4 +147,4 @@ func _draw() -> void:
 			draw_rect(Rect2(x * TILE, y * TILE, TILE, TILE), c)
 			var trinket := trinket_at(Vector2i(x, y))
 			if trinket:
-				draw_circle(Vector2(x + 0.5, y + 0.5) * TILE, TILE * 0.22, trinket.color)
+				trinket.draw_at(self, Vector2(x + 0.5, y + 0.5) * TILE, TILE)

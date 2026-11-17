@@ -129,6 +129,12 @@ func damage_barrier(layer: int, amount: float, at_x: float) -> bool:
 	return true
 
 
+## Keeps an enemy spawn y underground (at least two tiles down) and above the first unbroken
+## barrier below the player, so nothing spawns on the far side of a wall.
+func clamp_spawn_y(y: float, player_y: float) -> float:
+	return clampf(y, TILE * 2.0, next_barrier_y(player_y) - TILE)
+
+
 ## World y of the first unbroken barrier strictly below `from_y`.
 func next_barrier_y(from_y: float) -> float:
 	var layer := maxi(floori(from_y / float(profile.layer_height * TILE)) + 1, 1)

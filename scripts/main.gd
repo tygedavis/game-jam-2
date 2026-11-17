@@ -30,6 +30,8 @@ var _max_row := 0
 var _kills := 0
 var _gems := {} # display_name -> count
 var _gem_value := 0
+var _barriers_broken := 0
+var _barrier_money := 0
 
 
 func _ready() -> void:
@@ -55,6 +57,7 @@ func _ready() -> void:
 	layer.add_child(_xp_bar)
 	add_child(layer)
 	terrain.gem_collected.connect(_on_gem_collected)
+	terrain.barrier_broken.connect(_on_barrier_broken)
 	_results = ResultsScreen.new()
 	_results.retry.connect(_on_retry)
 	add_child(_results)
@@ -83,7 +86,7 @@ func _try_spawn() -> void:
 	var angle := randf() * TAU
 	var pos := drill.position + Vector2.from_angle(angle) * spawn_distance
 	# Keep spawns underground.
-	pos.y = maxf(pos.y, Terrain.TILE * 2.0)
+	pos.y = terrain.clamp_spawn_y(pos.y, drill.position.y)
 	var enemy: Enemy = ENEMY_SCENE.instantiate()
 	enemy.setup(enemy_defs.pick_random(), terrain, drill)
 	enemy.position = pos
@@ -94,6 +97,12 @@ func _try_spawn() -> void:
 func _on_gem_collected(def: GemDef) -> void:
 	_gems[def.display_name] = _gems.get(def.display_name, 0) + 1
 	_gem_value += def.value
+
+
+func _on_barrier_broken(_layer: int, payout: int, _at: Vector2) -> void:
+	_barriers_broken += 1
+	_barrier_money += payout
+	_gem_value += payout
 
 
 func _on_enemy_killed(def: EnemyDef, _at: Vector2) -> void:
@@ -137,6 +146,7 @@ func _on_player_died() -> void:
 	for name in _gems:
 		lines.append("  %s x%d" % [name, _gems[name]])
 	lines.append("")
+	lines.append("Barriers broken: %d  (+%d)" % [_barriers_broken, _barrier_money])
 	lines.append("Total value: %d" % _gem_value)
 	Save.bank(_gem_value)
 	lines.append("Banked %d  (money: %d)" % [_gem_value, Save.money])

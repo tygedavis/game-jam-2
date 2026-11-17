@@ -10,6 +10,7 @@ func _init() -> void:
 	test_hp_and_payout()
 	test_damage_then_break_once()
 	test_next_barrier_y()
+	test_spawn_clamp()
 	quit(1 if _failed else 0)
 
 
@@ -65,4 +66,13 @@ func test_next_barrier_y() -> void:
 	_check("next: strictly below", t.next_barrier_y(1280.0) == 2560.0)
 	t.damage_barrier(1, t.barrier_max_hp(1), 0.0)
 	_check("next: skips a broken barrier", t.next_barrier_y(100.0) == 2560.0)
+	t.free()
+
+
+func test_spawn_clamp() -> void:
+	var t := _terrain()
+	_check("spawn: kept above the first unbroken barrier", t.clamp_spawn_y(5000.0, 100.0) == 1280.0 - 32.0)
+	_check("spawn: still at least two tiles down", t.clamp_spawn_y(0.0, 100.0) == 64.0)
+	t.damage_barrier(1, t.barrier_max_hp(1), 0.0)
+	_check("spawn: limit moves down once the barrier breaks", t.clamp_spawn_y(5000.0, 100.0) == 2560.0 - 32.0)
 	t.free()

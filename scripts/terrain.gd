@@ -29,6 +29,8 @@ const PREVIEW_ROWS := 3
 var _seed := 0
 var _override_by_layer := {}
 var _tiles := {} # Vector2i -> current HP (<= 0 means dug out)
+var _gem_hp := {} # Vector2i -> remaining gem durability (only gems that have been hit)
+var _gems_done := {} # Vector2i -> true once a gem has been collected
 var _view := Rect2()
 
 
@@ -74,20 +76,48 @@ func is_dirt(cell: Vector2i) -> bool:
 	return cell.y >= 0 and _hp_at(cell) > 0.0
 
 
-## Damages a dirt tile. Returns true if it broke. Only the player's attacks pass
-## collect = true; a gem in a tile broken by anything else is lost.
+## True if something still blocks the drill here: dirt, or a gem that has not been collected.
+func is_blocked(cell: Vector2i) -> bool:
+	return is_solid(cell) or _gem_alive(cell)
+
+
+## A gem is in this tile and has not been collected (it may still be buried or already exposed).
+func _gem_alive(cell: Vector2i) -> bool:
+	return cell.y >= 0 and not _gems_done.has(cell) and gem_at(cell) != null
+
+
+## True if a gem is in this tile and its surrounding dirt is gone, so it can be dug.
+func gem_exposed(cell: Vector2i) -> bool:
+	return cell.y >= 0 and _hp_at(cell) <= 0.0 and _gem_alive(cell)
+
+
+## Remaining durability of the gem in this tile as a fraction (1 = untouched).
+func gem_fraction(cell: Vector2i) -> float:
+	var def := gem_at(cell)
+	if def == null:
+		return 0.0
+	return _gem_hp.get(cell, def.durability) / def.durability
+
+
+## Damages a tile. Dirt is damaged first. Once the dirt is gone, a gem in the tile is exposed and
+## takes the damage instead, but only from the player's attacks (collect = true); collecting it
+## when its durability runs out. Enemies only ever dig dirt. Returns true if something broke.
 func damage(cell: Vector2i, amount: float, collect := false) -> bool:
-	if not is_dirt(cell):
+	if is_dirt(cell):
+		var hp := maxf(_hp_at(cell) - amount, 0.0)
+		_tiles[cell] = hp
+		queue_redraw()
+		return hp <= 0.0
+	if not collect or not gem_exposed(cell):
 		return false
-	var hp := maxf(_hp_at(cell) - amount, 0.0)
-	_tiles[cell] = hp
+	var def := gem_at(cell)
+	var left := maxf(_gem_hp.get(cell, def.durability) - amount, 0.0)
+	_gem_hp[cell] = left
 	queue_redraw()
-	if hp > 0.0:
+	if left > 0.0:
 		return false
-	if collect:
-		var gem := gem_at(cell)
-		if gem:
-			gem_collected.emit(gem)
+	_gems_done[cell] = true
+	gem_collected.emit(def)
 	return true
 
 
@@ -179,13 +209,19 @@ func _draw() -> void:
 	for y in range(maxi(from.y, 0), to.y + 1):
 		var full := max_hp(y)
 		for x in range(from.x, to.x + 1):
-			var hp := _hp_at(Vector2i(x, y))
-			if hp <= 0.0:
+			var cell := Vector2i(x, y)
+			var hp := _hp_at(cell)
+			if hp > 0.0:
+				_draw_dirt(x, y, hp / full) # damaged tiles darken so progress is visible
+			var gem := gem_at(cell)
+			if gem == null or _gems_done.has(cell):
 				continue
-			_draw_dirt(x, y, hp / full) # damaged tiles darken so progress is visible
-			var gem := gem_at(Vector2i(x, y))
-			if gem:
-				gem.draw_at(self, Vector2(x + 0.5, y + 0.5) * TILE, TILE)
+			# A gem is drawn in its tile; once exposed it darkens as its durability drops.
+			var frac := gem_fraction(cell)
+			var center := Vector2(x + 0.5, y + 0.5) * TILE
+			gem.draw_at(self, center, TILE, frac)
+			if hp <= 0.0 and frac < 1.0:
+				draw_rect(Rect2(center + Vector2(-12, 12), Vector2(24.0 * frac, 3)), Color(0.4, 1.0, 0.5))
 
 
 ## Editor-only preview: the real terrain is generated while playing, so show a sample of each of the

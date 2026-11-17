@@ -8,6 +8,7 @@ script = ExtResource("1")
 display_name = "Lost Coin"
 value = 5
 weight = 3.0
+durability = 15.0
 min_layer = 0
 color = Color(0.95, 0.8, 0.2, 1)
 sprite = ExtResource("tex")

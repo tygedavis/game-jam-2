@@ -127,7 +127,7 @@ func _blocked(center: Vector2) -> bool:
 	var b := terrain.world_to_cell(center + _half - Vector2(0.01, 0.01))
 	for y in range(a.y, b.y + 1):
 		for x in range(a.x, b.x + 1):
-			if terrain.is_solid(Vector2i(x, y)):
+			if terrain.is_blocked(Vector2i(x, y)):
 				return true
 	return false
 

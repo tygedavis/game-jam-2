@@ -8,6 +8,7 @@ script = ExtResource("1")
 display_name = "Fossil"
 value = 15
 weight = 3.0
+durability = 30.0
 min_layer = 1
 color = Color(0.7, 0.65, 0.55, 1)
 sprite = ExtResource("tex")

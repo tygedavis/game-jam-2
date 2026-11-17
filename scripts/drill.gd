@@ -102,7 +102,7 @@ func _move_axis(offset: Vector2) -> void:
 	if offset == Vector2.ZERO:
 		return
 	var target := position + offset
-	if not _blocked(target) and not _hits_enemy(target):
+	if not _blocked(target) and not _crosses_barrier(target) and not _hits_enemy(target):
 		position = target
 		return
 	# Blocked: creep up to the obstacle so we end flush against it. Otherwise a big step (speed
@@ -112,7 +112,7 @@ func _move_axis(offset: Vector2) -> void:
 	while remaining > 0.0:
 		var creep := minf(1.0, remaining)
 		var next := position + direction * creep
-		if _blocked(next) or _hits_enemy(next):
+		if _blocked(next) or _crosses_barrier(next) or _hits_enemy(next):
 			return
 		position = next
 		remaining -= creep
@@ -139,6 +139,12 @@ func _blocked(center: Vector2) -> bool:
 	return false
 
 
+## True if moving from the current position to `center` would touch an unbroken barrier. Checks the
+## whole path, so a step larger than the wall's thickness (speed upgrades, hitches) can't skip it.
+func _crosses_barrier(center: Vector2) -> bool:
+	return terrain.barrier_layer_in_rect(rect().merge(Rect2(center - _half, _half * 2.0))) >= 1
+
+
 ## Dirt damage per second while digging (same output as the old attack timer).
 func dig_power() -> float:
 	return attack_damage / attack_interval
@@ -163,6 +169,9 @@ func _dig(delta: float) -> void:
 	for cell_y in range(first_cell.y, last_cell.y + 1):
 		for cell_x in range(first_cell.x, last_cell.x + 1):
 			terrain.damage(Vector2i(cell_x, cell_y), damage_this_frame, true)
+	var barrier := terrain.barrier_layer_in_rect(contact_rect)
+	if barrier >= 1:
+		terrain.damage_barrier(barrier, damage_this_frame, contact_rect.get_center().x)
 
 
 ## Fires one projectile from the drill's center toward the mouse cursor.

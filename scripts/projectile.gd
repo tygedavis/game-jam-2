@@ -35,9 +35,13 @@ func _physics_process(delta: float) -> void:
 
 
 func _hit_something() -> bool:
+	var hit_box := Rect2(position - Vector2(RADIUS, RADIUS), Vector2(RADIUS, RADIUS) * 2.0)
+	var barrier := terrain.barrier_layer_in_rect(hit_box)
+	if barrier >= 1:
+		terrain.damage_barrier(barrier, damage, position.x)
+		return true
 	if terrain.is_solid(terrain.world_to_cell(position)):
 		return true
-	var hit_box := Rect2(position - Vector2(RADIUS, RADIUS), Vector2(RADIUS, RADIUS) * 2.0)
 	for node in get_tree().get_nodes_in_group("enemies"):
 		var enemy := node as Enemy
 		if enemy and enemy.rect().intersects(hit_box):

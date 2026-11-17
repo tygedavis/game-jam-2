@@ -66,7 +66,8 @@ func _move_axis(offset: Vector2, delta: float) -> void:
 		return # solid: stop against the player instead of overlapping
 	var a := terrain.world_to_cell(next.position)
 	var b := terrain.world_to_cell(next.end - Vector2(0.01, 0.01))
-	var blocked := false
+	# A barrier stops enemies, but only the player can damage it.
+	var blocked := terrain.barrier_layer_in_rect(next) >= 1
 	for y in range(a.y, b.y + 1):
 		for x in range(a.x, b.x + 1):
 			var cell := Vector2i(x, y)

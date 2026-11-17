@@ -23,7 +23,7 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - The playable character is a **dog driving a drill vehicle**. The drill is what digs; the dog is the pilot. The vehicle is the player's on-screen avatar for the whole run.
 - Side-view. The drill digs down and sideways (not freely in 8 directions).
 - Terrain is destructible, and carved tunnels persist for the run.
-- **There is no dig button.** Digging happens automatically whenever the drill is steering into dirt it is touching. Digging is separate from attacking (see Combat). Gems are buried in dirt tiles and have their own **durability**: dig away the dirt to expose a gem, then keep digging to break it out and collect it. An exposed gem blocks the drill like dirt until collected. Enemies only dig dirt, so they never destroy or collect gems.
+- **There is no dig button.** Digging happens automatically whenever dirt (or an exposed gem) touches the drill's leading edge in the direction it faces, whether or not the player is moving. Digging is separate from attacking (see Combat). Gems are buried in dirt tiles and have their own **durability**: dig away the dirt to expose a gem, then keep digging to break it out and collect it. An exposed gem blocks the drill like dirt until collected. Enemies only dig dirt, so they never destroy or collect gems.
 
 ### Depth layers and hard ground
 - The ground is divided into depth layers. Each deeper layer is harder to dig.

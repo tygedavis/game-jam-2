@@ -1,7 +1,7 @@
 class_name Drill
 extends Node2D
 ## Player drill vehicle. Moves in four directions; blocked by dirt.
-## Digging is automatic: whenever the drill is steering into dirt it touches, it damages that
+## Digging is automatic: whenever dirt or a gem touches the drill's leading edge, it damages that
 ## dirt continuously. The auto-attack (until the mouse attack replaces it) only hits enemies.
 ## Dig power is derived from the attack stats, so attack upgrades also speed up digging.
 
@@ -80,8 +80,7 @@ func _physics_process(delta: float) -> void:
 	_move_axis(Vector2(step.x, 0))
 	_move_axis(Vector2(0, step.y))
 
-	if input != Vector2i.ZERO:
-		_dig(delta)
+	_dig(delta) # digs whatever the leading edge touches, even when standing still
 
 	_attack_timer -= delta
 	if _attack_timer <= 0.0:

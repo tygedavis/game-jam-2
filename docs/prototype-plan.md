@@ -41,4 +41,4 @@ Each was playable and committed on its own.
 ## Structure
 - Content as Godot `Resource` files so it can be added without code changes: `scripts/data/` for the definitions (`LayerDef`, `TerrainProfile`, `EnemyDef`, `UpgradeDef`, `TrinketDef`), `data/` for the `.tres` instances.
 - `scenes/` for entities and screens (`surface.tscn` is the main scene; `main.tscn` is a run), `scripts/` for systems.
-- Keep visuals separate from logic so placeholder shapes can be swapped for sprites.
+- Keep visuals separate from logic so placeholder shapes can be swapped for sprites. Characters are `AutoSprite` nodes (`scripts/auto_sprite.gd`) in the scenes; see `docs/art-guide.md`.

@@ -29,6 +29,8 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - The ground is divided into depth layers. Each deeper layer is harder to dig.
 - Hardness is a **soft block**: a layer can be effectively impassable until the drill's dig power is upgraded enough. This is what pushes the player back to the owner to upgrade.
 - Layers also drive enemy types, gem rarity, and visuals (to be defined).
+- **Layer barriers:** a thin wall (about 12 px, tunable) sits on every boundary between layers. It has high HP and the player must break it, by digging or shooting, to reach the next layer. Enemies cannot damage it. Breaking it pays a large amount of money immediately and is the run's big reward moment, so it gets heavy feedback (hit-stop, shake, particles, coin shower, popup). Once broken it never returns during that run.
+- **No spawn camping:** enemies never spawn on the far side of an unbroken barrier; they only spawn in the player's current layer and above.
 
 ### Combat
 - Attacking is player-issued: hold left click to fire projectiles toward the mouse cursor. Upgrades add or modify them.
@@ -71,6 +73,8 @@ A 2D side-view roguelite with automatic attacks and level-up upgrade choices. Yo
 - Other things the surface hub should contain.
 - Jam deadline and scope cutoff (not yet given).
 - Exact death penalty.
+- An upgrade related to moving up layers (deferred: needs a return-to-surface mechanic first).
+- Barrier tuning: HP multiple, payout per layer, and whether broken barriers should ever persist across runs.
 - Weapon and upgrade list, gem list, layer count, and names for each layer.
 - Gamepad support (aiming would need a stick). Digging has no trigger; attacks are aimed with the mouse.
 - Whether extra weapons (beyond the dig attack) exist, and if they auto-target enemies only or can also break dirt.

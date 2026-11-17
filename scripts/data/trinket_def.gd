@@ -1,3 +1,4 @@
+@tool
 class_name TrinketDef
 extends Resource
 ## A buried trinket. Add one by creating a TrinketDef .tres and listing it on the Terrain node.

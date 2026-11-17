@@ -34,7 +34,17 @@ Enemies and trinkets live in data files, not scenes: double-click the `.tres` fi
 (enemies spawn once you are a few rows deep). To add a new enemy or trinket, right-click an existing `.tres`
 > Duplicate, change the fields, and ask the developer to list it in the scene.
 
-Not yet swappable (still coloured shapes in code): the dirt tiles. This is next.
+| Dirt tiles (all layers) | `data/terrain_profile.tres` > **Tile Texture** | `tile_dirt.png` (4 variants, 128x32) | Tiles are **32x32**. Draw it light/grey: the game tints it with each layer's colour, so every depth looks different. |
+| Dirt tiles (one layer) | `data/layers/layer_1.tres` (etc.) > **Tile Texture** | none yet | Shown exactly as drawn (no tint). Use this for a layer that needs its own look. |
+
+**Tile variety:** put several 32x32 tiles side by side in one image and set **Tile Variants** to how many
+(e.g. a 128x32 image = 4). The game picks one at random per tile.
+
+**Preview:** open `scenes/main.tscn` and look near the origin. Under the Terrain node you'll see a sample
+patch of each of the first four layers, plus a row of the trinkets. It updates as you change textures.
+(The real terrain is generated while playing, so the layout in the game differs.)
+
+Still coloured shapes in code: the sky and grass strip.
 
 ## Good to know
 - An enemy's hitbox is its **Size** in the `.tres` (pixels), whatever size the art is.

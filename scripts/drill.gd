@@ -33,6 +33,10 @@ var _half := Vector2(12, 12)
 var _attack_timer := 0.0
 var _flash := 0.0
 
+## The drill art (an AutoSprite child named Sprite). Artists swap its texture in the editor.
+## The art should point DOWN; it is rotated to match the facing direction.
+@onready var _sprite: Node2D = $Sprite
+
 
 func _ready() -> void:
 	hp = max_hp
@@ -78,6 +82,7 @@ func _physics_process(delta: float) -> void:
 		_attack_timer = attack_interval
 		_attack()
 	_flash = maxf(_flash - delta, 0.0)
+	_update_visuals()
 	queue_redraw()
 
 
@@ -183,13 +188,14 @@ func _clip_to_open(r: Rect2, a: Vector2i, b: Vector2i) -> Rect2:
 	return out
 
 
+func _update_visuals() -> void:
+	# Art points down; rotate it to the facing direction. Blink while invulnerable.
+	_sprite.rotation = Vector2.DOWN.angle_to(Vector2(facing))
+	var blink := _invuln > 0.0 and int(_invuln * 20.0) % 2 == 0
+	_sprite.modulate.a = 0.5 if blink else 1.0
+
+
 func _draw() -> void:
-	# Placeholder visuals: body plus a drill nose showing the facing direction.
-	var body := Color(0.95, 0.75, 0.2)
-	if _invuln > 0.0 and int(_invuln * 20.0) % 2 == 0:
-		body = Color(1, 1, 1, 0.5)
-	draw_rect(Rect2(-_half, _half * 2.0), body)
-	var nose := Vector2(facing) * (_half.x + 6.0)
-	draw_circle(nose, 6.0, Color(0.7, 0.7, 0.75))
+	# The drill's look is the Sprite child; only the attack flash is drawn here.
 	if _flash > 0.0:
 		draw_rect(attack_rect(), Color(1, 1, 1, 0.35))

@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/terrain.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/drill.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/auto_sprite.gd" id="sprite_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/drill.png" id="drill_tex"]
 
 [ext_resource type="Script" path="res://scripts/data/layer_def.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/data/terrain_profile.gd" id="7"]
@@ -45,5 +47,9 @@ overrides = Array[ExtResource("6")]([ExtResource("4"), ExtResource("5")])
 
 [node name="Drill" type="Node2D" parent="."]
 script = ExtResource("3")
+
+[node name="Sprite" type="Sprite2D" parent="Drill"]
+script = ExtResource("sprite_script")
+texture = ExtResource("drill_tex")
 
 [node name="Camera2D" type="Camera2D" parent="."]

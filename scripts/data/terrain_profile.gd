@@ -1,3 +1,4 @@
+@tool
 class_name TerrainProfile
 extends Resource
 ## Formula for the endless ground. Any layer without a LayerDef override uses this,

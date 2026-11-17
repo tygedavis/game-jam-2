@@ -3,13 +3,13 @@
 See `docs/game-design.md` for the vision. This plan covers only the first playable prototype.
 
 ## Goal
-Answer one question: **is steering a drill that auto-digs and auto-fights, while burrowing enemies chase you, fun for about 5 minutes?**
+Answer one question: **is steering a drill that auto-digs and fires at the mouse, while burrowing enemies chase you, fun for about 5 minutes?**
 
 - Placeholder shapes only (colored rects/circles). No dependence on final art.
 - The game boots to a minimal surface scene; walk the dog to the drill and press Space to start a run. The shop and meta-progression come after the prototype.
 
 ## Decisions
-- Attack direction follows the drill's movement direction (single input, easy to change later).
+- Attack is a mouse-aimed projectile fired while left click is held (`Projectile`); `attack_reach` is its range. Digging is automatic and separate.
 - Movement is four-directional (one axis at a time). Controls: WASD or arrows; Space is always the interaction button.
 - Terrain is endless in depth. Tile HP comes from a formula (`TerrainProfile`: `base_hp * hp_growth ^ layer`), with optional hand-authored `LayerDef` overrides (name, colour, HP) for layers that need personality. Only damaged or dug tiles are stored.
 - Terrain is a script-drawn grid (not a `TileMapLayer`), so no tileset is needed. Tiles use textures from `TerrainProfile`/`LayerDef` (flat colour fallback); `terrain.gd` is `@tool` and draws a layer preview in the editor.

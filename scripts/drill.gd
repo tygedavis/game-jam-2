@@ -10,10 +10,10 @@ extends Node2D
 @export var attack_interval := 0.4
 ## Damage per attack.
 @export var attack_damage := 10.0
-## How far past the drill's edge the attack reaches, in pixels.
-@export var attack_reach := 20.0
-## Half-width of the attack, in pixels.
-@export var attack_area := 15.0
+## How far a projectile travels before it fades, in pixels.
+@export var attack_reach := 260.0
+## Projectile speed, in pixels per second.
+@export var projectile_speed := 600.0
 ## How close (px) the drill must be to dirt, in the steering direction, to dig it.
 @export var dig_contact := 4.0
 
@@ -34,7 +34,6 @@ var _invuln := 0.0
 var facing := Vector2i.DOWN
 var _half := Vector2(12, 12)
 var _attack_timer := 0.0
-var _flash := 0.0
 
 ## The drill art (an AutoSprite child named Sprite). Artists swap its texture in the editor.
 ## The art should point DOWN; it is rotated to match the facing direction.
@@ -82,11 +81,10 @@ func _physics_process(delta: float) -> void:
 
 	_dig(delta) # digs whatever the leading edge touches, even when standing still
 
-	_attack_timer -= delta
-	if _attack_timer <= 0.0:
+	_attack_timer = maxf(_attack_timer - delta, 0.0)
+	if _attack_timer <= 0.0 and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		_attack_timer = attack_interval
 		_attack()
-	_flash = maxf(_flash - delta, 0.0)
 	_update_visuals()
 	queue_redraw()
 
@@ -131,14 +129,6 @@ func _blocked(center: Vector2) -> bool:
 	return false
 
 
-## The attack area in local space: from the drill's center out past its edge by `attack_reach`.
-func attack_rect() -> Rect2:
-	var reach := _half.x + attack_reach
-	if facing.x != 0:
-		return Rect2(0.0 if facing.x > 0 else -reach, -attack_area, reach, attack_area * 2.0)
-	return Rect2(-attack_area, 0.0 if facing.y > 0 else -reach, attack_area * 2.0, reach)
-
-
 ## Dirt damage per second while digging (same output as the old attack timer).
 func dig_power() -> float:
 	return attack_damage / attack_interval
@@ -165,54 +155,14 @@ func _dig(delta: float) -> void:
 			terrain.damage(Vector2i(cell_x, cell_y), damage_this_frame, true)
 
 
+## Fires one projectile from the drill's center toward the mouse cursor.
 func _attack() -> void:
-	_flash = 0.08
-	var attack_world_rect := attack_rect()
-	attack_world_rect.position += position
-	var first_cell := terrain.world_to_cell(attack_world_rect.position)
-	var last_cell := terrain.world_to_cell(attack_world_rect.end - Vector2(0.01, 0.01))
-	# Enemies can only be hit up to the nearest solid dirt, so the attack can't reach through the ground.
-	var reachable_rect := _clip_to_open(attack_world_rect, first_cell, last_cell)
-	for node in get_tree().get_nodes_in_group("enemies"):
-		var enemy := node as Enemy
-		if enemy and enemy.rect().intersects(reachable_rect):
-			enemy.take_damage(attack_damage)
-
-
-## Trims the world-space attack rect (covering cells `first_cell`..`last_cell`) so it stops at the
-## nearest solid cell in the facing direction.
-func _clip_to_open(attack_world_rect: Rect2, first_cell: Vector2i, last_cell: Vector2i) -> Rect2:
-	var tile_size := float(Terrain.TILE)
-	var nearest_distance := INF
-	for cell_y in range(first_cell.y, last_cell.y + 1):
-		for cell_x in range(first_cell.x, last_cell.x + 1):
-			if not terrain.is_solid(Vector2i(cell_x, cell_y)):
-				continue
-			var distance: float
-			if facing.x > 0:
-				distance = cell_x * tile_size - attack_world_rect.position.x
-			elif facing.x < 0:
-				distance = attack_world_rect.end.x - (cell_x + 1) * tile_size
-			elif facing.y > 0:
-				distance = cell_y * tile_size - attack_world_rect.position.y
-			else:
-				distance = attack_world_rect.end.y - (cell_y + 1) * tile_size
-			nearest_distance = minf(nearest_distance, distance)
-	if nearest_distance == INF:
-		return attack_world_rect
-	nearest_distance = maxf(nearest_distance, 0.0)
-	var clipped := attack_world_rect
-	if facing.x > 0:
-		clipped.size.x = nearest_distance
-	elif facing.x < 0:
-		clipped.position.x = attack_world_rect.end.x - nearest_distance
-		clipped.size.x = nearest_distance
-	elif facing.y > 0:
-		clipped.size.y = nearest_distance
-	else:
-		clipped.position.y = attack_world_rect.end.y - nearest_distance
-		clipped.size.y = nearest_distance
-	return clipped
+	var direction := get_global_mouse_position() - global_position
+	if direction.is_zero_approx():
+		direction = Vector2(facing)
+	var shot := Projectile.new()
+	shot.setup(terrain, position, direction, projectile_speed, attack_damage, attack_reach)
+	get_parent().add_child(shot)
 
 
 func _update_visuals() -> void:
@@ -220,9 +170,3 @@ func _update_visuals() -> void:
 	_sprite.rotation = Vector2.DOWN.angle_to(Vector2(facing))
 	var blink := _invuln > 0.0 and int(_invuln * 20.0) % 2 == 0
 	_sprite.modulate.a = 0.5 if blink else 1.0
-
-
-func _draw() -> void:
-	# The drill's look is the Sprite child; only the attack flash is drawn here.
-	if _flash > 0.0:
-		draw_rect(attack_rect(), Color(1, 1, 1, 0.35))

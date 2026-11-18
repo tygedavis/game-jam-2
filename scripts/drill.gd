@@ -42,12 +42,19 @@ func _ready() -> void:
 	hp = max_hp
 
 
+## A DevMode toggle. Looked up by path (not the DevMode identifier) so this script still compiles
+## where autoloads are not registered yet, such as headless test scripts; false if absent.
+func _dev_flag(flag: StringName) -> bool:
+	var dev := get_node_or_null("/root/DevMode")
+	return dev != null and bool(dev.get(flag))
+
+
 func rect() -> Rect2:
 	return Rect2(position - _half, _half * 2.0)
 
 
 func take_damage(amount: float) -> void:
-	if _invuln > 0.0 or hp <= 0.0:
+	if _dev_flag(&"invincible") or _invuln > 0.0 or hp <= 0.0:
 		return
 	hp -= amount
 	_invuln = hit_cooldown
@@ -106,7 +113,8 @@ func _physics_process(delta: float) -> void:
 	_move_axis(Vector2(step.x, 0))
 	_move_axis(Vector2(0, step.y))
 
-	_dig(delta) # digs whatever the leading edge touches, even when standing still
+	if not _dev_flag(&"noclip"):
+		_dig(delta) # digs whatever the leading edge touches, even when standing still
 
 	_attack_timer = maxf(_attack_timer - delta, 0.0)
 	if _attack_timer <= 0.0 and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
@@ -131,6 +139,10 @@ func _move_axis(offset: Vector2) -> void:
 	if offset == Vector2.ZERO:
 		return
 	var target := position + offset
+	# Dev noclip: dirt, gems and barriers don't stop the drill (enemies still do).
+	if _dev_flag(&"noclip") and not _hits_enemy(target):
+		position = target
+		return
 	if not _blocked(target) and not _crosses_barrier(target) and not _hits_enemy(target):
 		position = target
 		return

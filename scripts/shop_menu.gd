@@ -48,11 +48,16 @@ func close() -> void:
 ## The text of one shop row. Locked items show their unlock price; unlocked ones show the level,
 ## the buff now and after the next upgrade, and the next upgrade price (or MAX).
 static func row_text(def: UpgradeItemDef, unlocked: bool, level: int, _money: int) -> String:
+	var name := def.display_name
+	if def.description != "":
+		name += " (%s)" % def.description
 	if not unlocked:
-		return "%s   Unlock   Cost %d" % [def.display_name, def.unlock_cost]
-	var status := "MAX" if level >= def.max_shop_level else "Cost %d" % def.cost_for(level)
-	return "%s   Lv %d/%d   +%s -> +%s per pickup   %s" % [def.display_name, level,
-		def.max_shop_level, _percent(def.buff_at_level(level)), _percent(def.buff_at_level(level + 1)), status]
+		return "%s   Unlock   Cost %d" % [name, def.unlock_cost]
+	if level >= def.max_shop_level:
+		return "%s   Lv %d/%d   +%s per pickup   MAX" % [name, level, def.max_shop_level,
+			_percent(def.buff_at_level(level))]
+	return "%s   Lv %d/%d   +%s -> +%s per pickup   Cost %d" % [name, level, def.max_shop_level,
+		_percent(def.buff_at_level(level)), _percent(def.buff_at_level(level + 1)), def.cost_for(level)]
 
 
 static func _percent(fraction: float) -> String:

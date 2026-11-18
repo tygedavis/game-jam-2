@@ -5,7 +5,6 @@ extends SceneTree
 const TEST_PATH := "user://shop_save_test.json"
 
 var _failed := false
-var _n := 0
 
 
 func check(test_name: String, ok: bool) -> void:

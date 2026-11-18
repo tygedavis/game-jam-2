@@ -16,8 +16,6 @@ extends Node2D
 @export var dig_contact := 4.0
 
 signal died
-signal xp_changed
-signal leveled_up
 
 @export var max_hp := 100.0
 ## Seconds of invulnerability after taking a hit.
@@ -25,13 +23,15 @@ signal leveled_up
 
 var terrain: Terrain
 var hp := 0.0
-## XP progress toward the next level (resets on level-up).
-var xp := 0.0
-var level := 1
 var _invuln := 0.0
 var facing := Vector2i.DOWN
 var _half := Vector2(12, 12)
 var _attack_timer := 0.0
+## Stats before any upgrade item, and the items found this run (id -> {def, stacks, level}).
+var _baseline := {}
+var _items := {}
+
+const BUFFED_PROPERTIES := ["attack_damage", "attack_interval", "speed"]
 
 ## The drill art (an AutoSprite child named Sprite). Artists swap its texture in the editor.
 ## The art should point DOWN; it is rotated to match the facing direction.
@@ -55,17 +55,46 @@ func take_damage(amount: float) -> void:
 		died.emit()
 
 
-func xp_to_next() -> float:
-	return 10.0 + 6.0 * (level - 1)
+## Records the current stats as the baseline that item buffs apply to. Call once at run start,
+## after permanent upgrades are applied.
+func capture_baseline() -> void:
+	for p in BUFFED_PROPERTIES:
+		_baseline[p] = get(p)
 
 
-func gain_xp(amount: float) -> void:
-	xp += amount
-	while xp >= xp_to_next():
-		xp -= xp_to_next()
-		level += 1
-		leveled_up.emit()
-	xp_changed.emit()
+## Adds one stack of an upgrade item for this run. Returns false (and changes nothing) at the cap.
+## `shop_level` is the item's persistent shop level, which sets how strong each stack is.
+func add_upgrade(def: UpgradeItemDef, shop_level: int) -> bool:
+	if _baseline.is_empty():
+		capture_baseline()
+	var entry: Dictionary = _items.get(def.id(), {"def": def, "stacks": 0, "level": shop_level})
+	if entry["stacks"] >= def.max_stacks:
+		return false
+	entry["stacks"] += 1
+	_items[def.id()] = entry
+	_apply_buffs()
+	return true
+
+
+func stacks_of(def: UpgradeItemDef) -> int:
+	return _items.get(def.id(), {"stacks": 0})["stacks"]
+
+
+## Sum of all stack buffs for one stat, as a fraction (0.1 = +10%).
+func total_buff(property: String) -> float:
+	var total := 0.0
+	for entry in _items.values():
+		var def: UpgradeItemDef = entry["def"]
+		if def.property == property:
+			total += entry["stacks"] * def.buff_at_level(entry["level"])
+	return total
+
+
+func _apply_buffs() -> void:
+	for p in BUFFED_PROPERTIES:
+		var factor := 1.0 + total_buff(p)
+		# A positive attack_interval buff means faster attacks, so it divides.
+		set(p, _baseline[p] / factor if p == "attack_interval" else _baseline[p] * factor)
 
 
 func _physics_process(delta: float) -> void:

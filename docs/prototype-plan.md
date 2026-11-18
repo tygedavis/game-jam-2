@@ -21,8 +21,8 @@ Each was playable and committed on its own.
 
 1. **Drill and terrain** (done). Destructible dirt grid; drill that moves and steers in side view.
 2. **Auto-attack is dig** (done). Timer-based attack in the facing direction shared by digging and fighting (damage, interval). Tile HP by depth layer, so deeper ground soft-blocks the drill.
-3. **Burrowing enemy** (done). `EnemyDef`-driven burrower spawns off screen, tunnels toward the drill, deals contact damage, takes damage from the auto-attack, drops XP. Player has HP.
-4. **Level-up choice** (done). XP bar; each level pauses and offers three random `UpgradeDef`s (attack damage, attack speed, move speed).
+3. **Burrowing enemy** (done). `EnemyDef`-driven burrower spawns off screen, tunnels toward the drill, deals contact damage, takes damage from the player's shots. Player has HP.
+4. **Map upgrade items** (done; replaced the XP level-up choice). `UpgradeItemDef`s are buried in the dirt; breaking the tile adds a stack of a percentage buff for the run (attack damage, attack speed, move speed).
 5. **Gems and depth** (done). Buried `GemDef`s (rarer and more valuable deeper), depth and gem HUD, results screen on death.
 6. **Stretch**
    - Minimal surface scene with a start prompt (done).
@@ -45,6 +45,6 @@ Each was playable and committed on its own.
 - Tunnel-dweller enemies and pre-dug tunnels; enemy scaling with depth.
 
 ## Structure
-- Content as Godot `Resource` files so it can be added without code changes: `scripts/data/` for the definitions (`LayerDef`, `TerrainProfile`, `EnemyDef`, `UpgradeDef`, `GemDef`), `data/` for the `.tres` instances.
+- Content as Godot `Resource` files so it can be added without code changes: `scripts/data/` for the definitions (`LayerDef`, `TerrainProfile`, `EnemyDef`, `UpgradeItemDef`, `GemDef`), `data/` for the `.tres` instances.
 - `scenes/` for entities and screens (`surface.tscn` is the main scene; `main.tscn` is a run), `scripts/` for systems.
 - Keep visuals separate from logic so placeholder shapes can be swapped for sprites. Characters are `AutoSprite` nodes (`scripts/auto_sprite.gd`) in the scenes; see `docs/art-guide.md`.

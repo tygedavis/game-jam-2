@@ -13,6 +13,9 @@ const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 @export var spawn_distance := 700.0
 ## Don't spawn until the drill is this many rows underground.
 @export var spawn_min_row := 3
+## Share of the run's total value lost when the player dies (0.25 = a quarter). A voluntary
+## return to the surface keeps everything.
+@export_range(0.0, 1.0, 0.01) var death_loss_fraction := 0.25
 
 @onready var terrain: Terrain = $Terrain
 @onready var drill: Drill = $Drill
@@ -21,6 +24,9 @@ const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 var _spawn_timer := 0.0
 var _hud: Label
 var _results: ResultsScreen
+var _return_prompt: ReturnPrompt
+var _gate := SurfaceGate.new()
+var _ended := false
 var _max_row := 0
 var _kills := 0
 var _gems := {} # display_name -> count
@@ -63,6 +69,10 @@ func _ready() -> void:
 	_results = ResultsScreen.new()
 	_results.retry.connect(_on_retry)
 	add_child(_results)
+	_return_prompt = ReturnPrompt.new()
+	_return_prompt.confirmed.connect(_on_return_confirmed)
+	_return_prompt.declined.connect(_on_return_declined)
+	add_child(_return_prompt)
 	_update_hud()
 
 
@@ -75,6 +85,8 @@ func _process(delta: float) -> void:
 		_spawn_timer = spawn_interval
 		_try_spawn()
 	_update_hud()
+	if not _ended and _gate.update(terrain.world_to_cell(drill.position).y):
+		_return_prompt.open()
 
 
 func _try_spawn() -> void:
@@ -115,25 +127,29 @@ func _on_enemy_killed(_def: EnemyDef, _at: Vector2) -> void:
 
 
 func _on_player_died() -> void:
-	var lines := PackedStringArray(["YOU WERE OVERRUN", "",
-		"Deepest: %d  (%s)" % [_max_row, terrain.layer_name(_max_row)],
-		"Enemies drilled: %d" % _kills, "", "Gems found:"])
-	if _gems.is_empty():
-		lines.append("  (none)")
-	for name in _gems:
-		lines.append("  %s x%d" % [name, _gems[name]])
-	lines.append("")
-	lines.append("Upgrades found:")
-	if _upgrades.is_empty():
-		lines.append("  (none)")
-	for id in _upgrades:
-		lines.append("  %s x%d" % [_upgrades[id]["name"], _upgrades[id]["stacks"]])
-	lines.append("")
-	lines.append("Barriers broken: %d  (+%d)" % [_barriers_broken, _barrier_money])
-	lines.append("Total value: %d" % _gem_value)
-	Save.bank(_gem_value)
-	lines.append("Banked %d  (money: %d)" % [_gem_value, Save.money])
-	_results.show_results("\n".join(lines))
+	_end_run("YOU WERE OVERRUN", true)
+
+
+func _on_return_confirmed() -> void:
+	_end_run("BACK ON THE SURFACE", false)
+
+
+func _on_return_declined() -> void:
+	get_tree().paused = false
+	_gate.decline()
+
+
+## Both endings go through here, once. Dying loses `death_loss_fraction` of the run's value;
+## returning voluntarily keeps all of it.
+func _end_run(title: String, died: bool) -> void:
+	if _ended:
+		return
+	_ended = true
+	var lost := RunSummary.lost_amount(_gem_value, death_loss_fraction) if died else 0
+	Save.bank(_gem_value - lost)
+	var stats := {"deepest": _max_row, "layer": terrain.layer_name(_max_row), "kills": _kills,
+		"gems": _gems, "upgrades": _upgrades, "barriers": _barriers_broken, "barrier_money": _barrier_money}
+	_results.show_results(RunSummary.build_text(title, stats, _gem_value, lost, Save.money, died))
 
 
 func _on_retry() -> void:

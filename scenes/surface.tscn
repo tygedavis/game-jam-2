@@ -1,19 +1,15 @@
-[gd_scene load_steps=30 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/surface.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/auto_sprite.gd" id="sprite_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/drill.png" id="drill_tex"]
 [ext_resource type="Texture2D" path="res://assets/sprites/owner.png" id="owner_tex"]
 [ext_resource type="Texture2D" path="res://assets/sprites/dog.png" id="dog_tex"]
-[ext_resource type="Script" path="res://scripts/data/meta_upgrade_def.gd" id="mscript"]
-[ext_resource type="Resource" path="res://data/meta/hard_bit.tres" id="m0"]
-[ext_resource type="Resource" path="res://data/meta/quick_motor.tres" id="m1"]
-[ext_resource type="Resource" path="res://data/meta/big_engine.tres" id="m3"]
-[ext_resource type="Resource" path="res://data/meta/armor_plating.tres" id="m4"]
+[ext_resource type="Resource" path="res://data/item_catalog.tres" id="catalog"]
 
 [node name="Surface" type="Node2D"]
 script = ExtResource("1")
-meta_upgrades = Array[ExtResource("mscript")]([ExtResource("m0"), ExtResource("m1"), ExtResource("m3"), ExtResource("m4")])
+catalog = ExtResource("catalog")
 
 [node name="Drill" type="Sprite2D" parent="."]
 position = Vector2(640, 360)

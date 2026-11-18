@@ -56,7 +56,7 @@ func take_damage(amount: float) -> void:
 
 
 ## Records the current stats as the baseline that item buffs apply to. Call once at run start,
-## after permanent upgrades are applied.
+## before any item stacks are added.
 func capture_baseline() -> void:
 	for p in BUFFED_PROPERTIES:
 		_baseline[p] = get(p)

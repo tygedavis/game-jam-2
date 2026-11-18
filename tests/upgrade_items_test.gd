@@ -28,6 +28,20 @@ func _test_def() -> void:
 	check("cost_for(2) grows", d.cost_for(2) == roundi(d.base_cost * pow(d.cost_growth, 2)))
 	var loaded: UpgradeItemDef = load("res://data/items/sharp_tip.tres")
 	check("id() is the file name", loaded != null and loaded.id() == "sharp_tip")
+	check("max_shop_level defaults to 5", UpgradeItemDef.new().max_shop_level == 5)
+	check("unlock_cost is positive", UpgradeItemDef.new().unlock_cost > 0)
+	var catalog: ItemCatalog = load("res://data/item_catalog.tres")
+	check("catalog has 3 items", catalog != null and catalog.items.size() == 3)
+	var ids: Array[String] = []
+	if catalog != null:
+		for it in catalog.items:
+			ids.append(it.id())
+	ids.sort()
+	check("catalog ids are the three items", ids == ["fast_gears", "sharp_tip", "turbo_tread"])
+	var seen := {}
+	for i in ids:
+		seen[i] = true
+	check("catalog ids are unique", seen.size() == ids.size())
 
 
 var _item_count := 0

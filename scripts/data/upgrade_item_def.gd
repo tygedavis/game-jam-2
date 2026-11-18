@@ -1,7 +1,7 @@
 class_name UpgradeItemDef
 extends Resource
 ## An upgrade found buried in the map. Add one by creating an UpgradeItemDef .tres and listing it
-## on the Terrain node in main.tscn. It must be its own .tres file: the file name is its id. Each pickup adds one stack for the current run; every stack adds
+## in the item catalog (data/item_catalog.tres). It must be its own .tres file: the file name is its id. Each pickup adds one stack for the current run; every stack adds
 ## a percentage buff to one Drill stat. The owner can later strengthen the per-stack buff (shop level).
 
 @export var display_name := "Upgrade Item"
@@ -15,6 +15,10 @@ extends Resource
 ## Most stacks the player can hold in one run.
 @export var max_stacks := 5
 ## Shop pricing (used by the shop upgrade flow, issue #38).
+## Price to unlock the item in the shop.
+@export var unlock_cost := 30
+## Highest shop upgrade level the owner can buy.
+@export var max_shop_level := 5
 @export var base_cost := 20
 @export var cost_growth := 1.6
 ## Spawn odds among the items available at a depth, and the shallowest layer it can appear in.

@@ -30,6 +30,7 @@ func _init() -> void:
 	await test_run_ends_once()
 	await test_prompt_not_open_at_run_start()
 	await test_prompt_opens_after_returning_from_depth()
+	await test_results_ignores_an_immediate_key_press()
 	_restore_save()
 	quit(1 if _failed else 0)
 
@@ -126,3 +127,24 @@ func test_prompt_opens_after_returning_from_depth() -> void:
 	await process_frame
 	_check("declined prompt does not reopen above ground", not main._return_prompt.visible)
 	await _finish(main)
+
+
+## A quick double-tap of Space (confirm the prompt, then continue) must not skip the summary.
+func test_results_ignores_an_immediate_key_press() -> void:
+	var results := ResultsScreen.new()
+	root.add_child(results)
+	await process_frame
+	var fired := [0]
+	results.retry.connect(func() -> void: fired[0] += 1)
+	results.show_results("summary")
+	var space := InputEventKey.new()
+	space.pressed = true
+	space.physical_keycode = KEY_SPACE
+	results._input(space)
+	_check("results ignores Space right after opening", fired[0] == 0)
+	await create_timer(0.5, true, false, true).timeout
+	results._input(space)
+	_check("results accepts Space after the short delay", fired[0] == 1)
+	paused = false
+	results.queue_free()
+	await process_frame

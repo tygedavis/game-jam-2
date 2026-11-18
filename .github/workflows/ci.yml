@@ -64,8 +64,11 @@ jobs:
       - name: Import project
         run: godot --headless --import
 
-      - name: Export
+      - name: Export (production build, no developer mode)
         run: |
           mkdir -p build/linux
-          godot --headless --export-release "Linux"
+          bash tools/build.sh --production "Linux"
           test -s build/linux/game-jam-2.x86_64
+
+      - name: Check the production build leaves out the developer mode
+        run: bash tests/production_build_check.sh

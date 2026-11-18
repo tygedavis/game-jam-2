@@ -31,7 +31,7 @@ Each was playable and committed on its own.
 
 ## Meta-progression (done)
 - `Save` autoload (`scripts/save.gd`) holds money and purchased upgrade levels in `user://save.json`.
-- Gem value is banked as money when a run ends (currently only on death, and all of it is kept: no penalty yet).
+- Gem value is banked as money when a run ends, either by dying (75% is kept) or by returning to the surface voluntarily (all of it is kept).
 - The owner stands on the surface (walk up, press Space). `MetaUpgradeDef` resources in `data/meta/` are listed on both `surface.tscn` (the shop stock) and `main.tscn` (applied at run start). Each level multiplies one drill stat; cost grows per level.
 
 ## Layer barriers (done)
@@ -41,7 +41,6 @@ Each was playable and committed on its own.
 - Test contract: `tests/**/*_test.gd`, `extends SceneTree`, print `PASS`/`FAIL` lines, `quit(1)` on failure. A test fails on a non-zero exit, a timeout (`TEST_TIMEOUT`, default 120s), any `FAIL` line, or no `PASS` line. New files are picked up automatically.
 
 ## Not yet built (vision items beyond the prototype)
-- Voluntary return to the surface mid-run, and a death penalty.
 - Tunnel-dweller enemies and pre-dug tunnels; enemy scaling with depth.
 
 ## Structure

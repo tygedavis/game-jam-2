@@ -46,8 +46,9 @@ A 2D side-view roguelite with upgrade items found buried in the ground. You play
 
 ### Run end and death
 - A run ends when the player chooses to return to the surface, or when they die.
-- Returning voluntarily keeps all loot.
-- Dying has a **small penalty** (for example, losing a portion of unbanked gems or money). The exact penalty is TBD but must be mild, never a full wipe.
+- **Voluntary return:** dig back up to the ground line (after having been underground) and a "Return to the surface?" prompt opens; Space confirms, Esc or the Keep digging button declines and the run continues. It reopens only after the drill goes underground again. There is no fee or delay: the cost is the trip back up while burrowers chase you. Returning keeps all loot.
+- **Death:** the player loses 25% of the run's total value (gems and barrier payouts, rounded down; `death_loss_fraction` on `Main`) and banks the rest. Never a full wipe.
+- Both endings show a run summary; the bottom of it shows what was earned versus what is kept (`Earned`, `Lost` on death only, `You keep`, `Banked`).
 
 ### The surface (hub)
 - The area above ground works like a main menu you can walk around in. It is the game's home base, not a run.
@@ -69,11 +70,10 @@ A 2D side-view roguelite with upgrade items found buried in the ground. You play
 - Enemy roster: which burrowers and tunnel dwellers exist, and what the tunnel dwellers do uniquely with pre-dug tunnels.
 - Whether pre-dug tunnels are part of every layer's generated terrain and how they are generated.
 - Whether owner upgrades are framed as drill upgrades, dog upgrades, or both (affects naming and art).
-- How the player triggers a return to the surface mid-run (walk up, item, button).
 - Other things the surface hub should contain.
 - Jam deadline and scope cutoff (not yet given).
-- Exact death penalty.
-- An upgrade related to moving up layers (deferred: needs a return-to-surface mechanic first).
+- Tuning the death loss (currently 25%) and whether other ways back up (rescue beacon, layer checkpoints) are added.
+- An upgrade related to moving up layers (now unblocked: the return-to-surface mechanic exists).
 - Barrier tuning: HP multiple, payout per layer, and whether broken barriers should ever persist across runs.
 - The upgrade item list (stats, buff sizes, caps, prices), weapon list, gem list, layer count, and names for each layer.
 - Gamepad support (aiming would need a stick). Digging has no trigger; attacks are aimed with the mouse.

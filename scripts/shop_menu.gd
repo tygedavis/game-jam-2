@@ -4,7 +4,7 @@ extends CanvasLayer
 
 signal closed
 
-var _defs: Array[MetaUpgradeDef] = []
+var _catalog: ItemCatalog
 var _title: Label
 var _box: VBoxContainer
 
@@ -34,8 +34,8 @@ func _ready() -> void:
 	col.add_child(hint)
 
 
-func open(defs: Array[MetaUpgradeDef]) -> void:
-	_defs = defs
+func open(catalog: ItemCatalog) -> void:
+	_catalog = catalog
 	visible = true
 	_refresh()
 
@@ -45,24 +45,51 @@ func close() -> void:
 	closed.emit()
 
 
+## The text of one shop row. Locked items show their unlock price; unlocked ones show the level,
+## the buff now and after the next upgrade, and the next upgrade price (or MAX).
+static func row_text(def: UpgradeItemDef, unlocked: bool, level: int, _money: int) -> String:
+	if not unlocked:
+		return "%s   Unlock   Cost %d" % [def.display_name, def.unlock_cost]
+	var status := "MAX" if level >= def.max_shop_level else "Cost %d" % def.cost_for(level)
+	return "%s   Lv %d/%d   +%s -> +%s per pickup   %s" % [def.display_name, level,
+		def.max_shop_level, _percent(def.buff_at_level(level)), _percent(def.buff_at_level(level + 1)), status]
+
+
+static func _percent(fraction: float) -> String:
+	var text := "%.1f" % (fraction * 100.0)
+	if text.ends_with(".0"):
+		text = text.trim_suffix(".0")
+	return text + "%"
+
+
 func _refresh() -> void:
-	_title.text = "THE OWNER'S SHOP    Money: %d" % Save.money
 	for child in _box.get_children():
 		child.queue_free()
-	for i in _defs.size():
-		var d := _defs[i]
+	if _catalog == null or _catalog.items.is_empty():
+		_title.text = "THE OWNER'S SHOP"
+		var empty := Label.new()
+		empty.text = "Nothing for sale yet"
+		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_box.add_child(empty)
+		return
+	_title.text = "THE OWNER'S SHOP    Money: %d" % Save.money
+	for i in _catalog.items.size():
+		var d := _catalog.items[i]
+		var unlocked := Save.is_unlocked(d)
 		var b := Button.new()
-		var status := "MAX" if Save.is_maxed(d) else "Cost %d" % Save.next_cost(d)
-		b.text = "%d. %s   Lv %d/%d   %s   (%s)" % [i + 1, d.display_name,
-			Save.level_of(d), d.max_level, d.description, status]
+		b.text = "%d. %s" % [i + 1, row_text(d, unlocked, Save.item_level_of(d), Save.money)]
 		b.custom_minimum_size = Vector2(560, 40)
-		b.disabled = not Save.can_buy(d)
+		b.disabled = not (Save.can_upgrade_item(d) if unlocked else Save.can_unlock(d))
 		b.pressed.connect(_buy.bind(i))
 		_box.add_child(b)
 
 
 func _buy(i: int) -> void:
-	if i < _defs.size() and Save.buy(_defs[i]):
+	if _catalog == null or i >= _catalog.items.size():
+		return
+	var d := _catalog.items[i]
+	var ok := Save.upgrade_item(d) if Save.is_unlocked(d) else Save.unlock(d)
+	if ok:
 		_refresh()
 
 

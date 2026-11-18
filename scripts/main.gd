@@ -5,8 +5,8 @@ const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 
 ## Enemy types that can spawn. Edit in main.tscn.
 @export var enemy_defs: Array[EnemyDef] = []
-## Permanent upgrades (bought from the owner) applied at run start.
-@export var meta_upgrades: Array[MetaUpgradeDef] = []
+## Every upgrade item; those unlocked at the shop can spawn in the ground.
+@export var catalog: ItemCatalog
 @export var spawn_interval := 2.0
 @export var max_enemies := 25
 ## Spawn distance from the player, in pixels (just off screen).
@@ -40,11 +40,10 @@ func _ready() -> void:
 	drill.terrain = terrain
 	# Only unlocked upgrade items can be found in the ground.
 	var pool: Array[UpgradeItemDef] = []
-	for def in terrain.upgrade_defs:
+	for def in catalog.items:
 		if Save.is_unlocked(def):
 			pool.append(def)
 	terrain.upgrade_defs = pool
-	Save.apply_to(drill, meta_upgrades)
 	drill.capture_baseline()
 	drill.hp = drill.max_hp
 	# Start parked on the ground line, matching the hub drill.

@@ -64,7 +64,7 @@ func _input(event: InputEvent) -> void:
 
 func _build() -> void:
 	var status := Label.new()
-	status.position = Vector2(12, 700)
+	status.position = Vector2(12, 684)
 	status.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
 	add_child(status)
 	controls["status"] = status

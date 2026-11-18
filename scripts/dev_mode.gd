@@ -17,7 +17,10 @@ var spawning_paused := false
 ## Set through set_infinite_money(), which also starts or ends the save sandbox.
 var infinite_money := false
 ## The active run (Main) while one is open, else null. Main sets and clears it.
-var run: Node = null
+var run: Node = null:
+	set(value):
+		run = value
+		changed.emit()
 
 
 func _ready() -> void:

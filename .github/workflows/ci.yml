@@ -72,3 +72,11 @@ jobs:
 
       - name: Check the production build leaves out the developer mode
         run: bash tests/production_build_check.sh
+
+      - name: Launch the production build
+        # Starts the exported game without scripts/dev/ and fails on any engine error
+        shell: bash -o pipefail {0}
+        run: |
+          chmod +x build/linux/game-jam-2.x86_64
+          build/linux/game-jam-2.x86_64 --headless --quit-after 5 2>&1 | tee run.log
+          ! grep -E "SCRIPT ERROR|Parse Error|ERROR:" run.log

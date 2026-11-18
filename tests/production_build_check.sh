@@ -16,6 +16,17 @@ check "unknown flag fails" bash -c '! bash tools/build.sh --bogus Linux >/dev/nu
 check "missing preset fails" bash -c '! bash tools/build.sh >/dev/null 2>&1'
 check "unknown preset fails" bash -c '! bash tools/build.sh --pack "$0/x.pck" "No Such Preset" >/dev/null 2>&1' "$tmp"
 
+# Which Godot export command each mode runs (a stand-in binary records its arguments).
+printf '#!/usr/bin/env bash\necho "$@" >> "%s/godot-args"\n' "$tmp" > "$tmp/fakegodot"; chmod +x "$tmp/fakegodot"
+GODOT="$tmp/fakegodot" bash tools/build.sh Linux >/dev/null 2>&1
+GODOT="$tmp/fakegodot" bash tools/build.sh --debug Linux >/dev/null 2>&1
+GODOT="$tmp/fakegodot" bash tools/build.sh --production Linux >/dev/null 2>&1
+check "normal build is a release export" grep -q -- "--export-release Linux" "$tmp/godot-args"
+check "--debug is a debug export (developer mode works in it)" grep -q -- "--export-debug Linux" "$tmp/godot-args"
+check "--production is a release export" test "$(grep -c -- "--export-release Linux" "$tmp/godot-args")" -eq 2
+check "--debug with --production is refused" bash -c '! bash tools/build.sh --debug --production Linux >/dev/null 2>&1'
+check "presets restored after the stand-in runs" test "$(sha256sum export_presets.cfg)" = "$before"
+
 bash tools/build.sh --production --dry-run Linux > "$tmp/prod.cfg" 2>&1
 bash tools/build.sh --dry-run Linux > "$tmp/dev.cfg" 2>&1
 check "production adds the feature tag to every preset" test "$(grep -c '^custom_features="production"' "$tmp/prod.cfg")" -eq 2

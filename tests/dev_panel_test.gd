@@ -38,6 +38,10 @@ func _init() -> void:
 	test_run_only_controls_without_a_run()
 	await test_run_controls_with_a_run()
 	test_freed_while_open_unpauses()
+	test_does_not_repause_after_the_other_pauser_let_go()
+	await test_controls_disable_when_the_run_ends()
+	await test_backtick_works_with_the_shop_open()
+	await test_shop_money_refreshes_when_infinite_money_toggles()
 	quit(1 if _failed else 0)
 
 
@@ -124,3 +128,66 @@ func test_freed_while_open_unpauses() -> void:
 	_check("cleanup: second panel paused the tree", paused)
 	extra.free()
 	_check("cleanup: freeing an open panel unpauses the tree", not paused)
+
+
+## Something else (the return prompt, the results screen) paused the game; the panel opens on top of
+## it; that other thing unpauses (Esc on the prompt, Space or Return on the results screen); closing
+## the panel must not pause the game again.
+func test_does_not_repause_after_the_other_pauser_let_go() -> void:
+	paused = true
+	_panel.set_open(true)
+	paused = false
+	_panel.set_open(false)
+	_check("pause: closing the panel does not re-pause after the other pauser let go", not paused)
+	var extra: Node = load(PANEL).new()
+	root.add_child(extra)
+	paused = true
+	extra.set_open(true)
+	paused = false
+	extra.free()
+	_check("pause: freeing an open panel does not re-pause either", not paused)
+	paused = false
+
+
+## The run ends (scene change) while the panel is open: Skip/Kill/Give must switch off.
+func test_controls_disable_when_the_run_ends() -> void:
+	var main: Node = load("res://scenes/main.tscn").instantiate()
+	root.add_child(main)
+	await process_frame
+	_panel.set_open(true)
+	_check("run ends: controls enabled while the run exists", not _panel.controls["skip_down"].disabled)
+	main.free()
+	_check("run ends: controls disabled the moment the run goes away",
+		_panel.controls["skip_down"].disabled and _panel.controls["give"].disabled
+		and _panel.controls["kill"].disabled)
+	_panel.set_open(false)
+	paused = false
+
+
+## (Loaded by path: naming ShopMenu would compile this test before the autoloads exist.)
+func _shop() -> Node:
+	var shop: Node = load("res://scripts/shop_menu.gd").new()
+	root.add_child(shop)
+	shop.open(load("res://data/item_catalog.tres"))
+	return shop
+
+
+## The shop swallows key presses, but the panel (infinite money is used in the shop) must still open.
+func test_backtick_works_with_the_shop_open() -> void:
+	var shop := _shop()
+	root.push_input(_key(KEY_QUOTELEFT))
+	_check("shop: backtick still opens the panel while the shop is open", _panel.is_open())
+	_panel.set_open(false)
+	root.push_input(_key(KEY_ESCAPE))
+	_check("shop: Esc still closes the shop", not shop.visible)
+	shop.free()
+	paused = false
+
+
+func test_shop_money_refreshes_when_infinite_money_toggles() -> void:
+	var shop := _shop()
+	_panel.controls["infinite_money"].button_pressed = true
+	_check("shop: open shop shows the sandbox wallet", shop._title.text.contains(str(root.get_node("Save").SANDBOX_MONEY)))
+	_panel.controls["infinite_money"].button_pressed = false
+	_check("shop: and the real wallet again afterwards", not shop._title.text.contains(str(root.get_node("Save").SANDBOX_MONEY)))
+	shop.free()

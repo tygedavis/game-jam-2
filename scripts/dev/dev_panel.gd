@@ -8,7 +8,9 @@ extends CanvasLayer
 var controls := {}
 
 var _open := false
-var _was_paused := false
+## True if opening the panel is what paused the game. Closing then unpauses it; if something else
+## (the return prompt, the results screen) had paused it, that thing owns the unpausing.
+var _paused_by_us := false
 var _window: Control
 
 
@@ -28,15 +30,16 @@ func is_open() -> bool:
 	return _open
 
 
-## Shows or hides the panel. Opening pauses the game; closing puts the pause back how it was.
+## Shows or hides the panel. Opening pauses the game (if it is not paused already); closing
+## unpauses it only if the panel was what paused it.
 func set_open(open: bool) -> void:
 	if open == _open and _window != null and _window.visible == open:
 		return
 	if open and not _open:
-		_was_paused = get_tree().paused
+		_paused_by_us = not get_tree().paused
 		get_tree().paused = true
 	elif not open and _open:
-		get_tree().paused = _was_paused
+		_release_pause()
 	_open = open
 	_window.visible = open
 	if open:
@@ -44,9 +47,15 @@ func set_open(open: bool) -> void:
 	_refresh()
 
 
+func _release_pause() -> void:
+	if _paused_by_us and get_tree() != null:
+		get_tree().paused = false
+	_paused_by_us = false
+
+
 func _exit_tree() -> void:
-	if _open and get_tree() != null:
-		get_tree().paused = _was_paused
+	if _open:
+		_release_pause()
 		_open = false
 
 

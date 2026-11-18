@@ -22,8 +22,8 @@ pass `/workspace` as the project path to MCP tools). Restart Claude Code and app
 The editor and game windows are not shown from the container; use the host `godot` for the GUI editor.
 
 ## Developer mode
-A testing panel for trying things without grinding. It only exists in debug runs (the editor, or `godot --path .`), never in
-production builds.
+A testing panel for trying things without grinding. It only exists in debug runs (the editor, `godot --path .`, or a `tools/build.sh --debug` export), never in
+production or plain release builds.
 
 **Using it**
 1. Run the game from the editor (or `godot --path .`).
@@ -51,7 +51,7 @@ Always export release builds with the wrapper, so developer mode is left out ent
 
 ```sh
 tools/build.sh --production "Linux"        # or "Windows Desktop"; CI does this for every published build
-tools/build.sh "Linux"                     # without the flag the build keeps developer mode (local testing only)
+tools/build.sh --debug "Linux"             # a debug export: the only exported build where developer mode works (local testing)
 bash tests/production_build_check.sh       # proves a production export has no developer code
 ```
 

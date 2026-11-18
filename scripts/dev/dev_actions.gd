@@ -11,7 +11,7 @@ const LAND_OFFSET_TILES := 2
 ## barrier without payout; both ways carve a small pocket at the landing spot. Returns false when
 ## it did nothing (already at the surface going up, or another direction).
 static func skip_layer(run: Node, direction: int) -> bool:
-	if direction != 1 and direction != -1:
+	if not is_instance_valid(run) or (direction != 1 and direction != -1):
 		return false
 	var terrain: Terrain = run.terrain
 	var drill: Drill = run.drill
@@ -33,6 +33,8 @@ static func skip_layer(run: Node, direction: int) -> bool:
 ## Gives one stack of an upgrade item, the same way picking it up from the ground does (so the
 ## run's HUD and caps stay right). Returns false at the stack cap.
 static func give_item(run: Node, def: UpgradeItemDef) -> bool:
+	if not is_instance_valid(run):
+		return false
 	var before: int = run.drill.stacks_of(def)
 	run.terrain.upgrade_collected.emit(def)
 	return run.drill.stacks_of(def) > before
@@ -40,6 +42,8 @@ static func give_item(run: Node, def: UpgradeItemDef) -> bool:
 
 ## Removes every enemy (not counted as kills). Returns how many.
 static func kill_enemies(run: Node) -> int:
+	if not is_instance_valid(run):
+		return 0
 	var enemies := run.get_tree().get_nodes_in_group("enemies")
 	for e in enemies:
 		e.queue_free()

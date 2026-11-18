@@ -100,6 +100,26 @@ func barrier_alive(layer: int) -> bool:
 	return layer >= 1 and not _barriers_done.has(layer)
 
 
+## Breaks a barrier outright: no signals, no payout. Safe to call twice.
+func mark_barrier_broken(layer: int) -> void:
+	_barriers_done[layer] = true
+	queue_redraw()
+
+
+## Clears every dirt tile and gem in `cells` (tile coordinates). Gems are removed without being
+## collected, so no signal fires and nothing is paid.
+func carve(cells: Rect2i) -> void:
+	for y in range(cells.position.y, cells.end.y):
+		for x in range(cells.position.x, cells.end.x):
+			var cell := Vector2i(x, y)
+			if cell.y < 0:
+				continue
+			_tiles[cell] = 0.0
+			if _gem_alive(cell):
+				_gems_done[cell] = true
+	queue_redraw()
+
+
 ## Remaining HP of a barrier as a fraction (1 = untouched).
 func barrier_fraction(layer: int) -> float:
 	return _barriers_hp.get(layer, barrier_max_hp(layer)) / barrier_max_hp(layer)

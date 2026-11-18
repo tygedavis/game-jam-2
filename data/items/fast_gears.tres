@@ -8,3 +8,4 @@ display_name = "Fast Gears"
 description = "+attack speed per stack"
 property = "attack_interval"
 color = Color(0.3, 0.8, 0.9, 1)
+unlock_cost = 50

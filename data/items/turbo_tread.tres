@@ -8,3 +8,4 @@ display_name = "Turbo Tread"
 description = "+move speed per stack"
 property = "speed"
 color = Color(0.4, 0.9, 0.4, 1)
+unlock_cost = 40

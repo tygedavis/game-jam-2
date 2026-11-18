@@ -4,7 +4,12 @@ extends CanvasLayer
 
 signal retry
 
+## Keys are ignored for this long after the screen opens, so a double-tap of Space (confirm the
+## return prompt, then continue) can't skip the summary.
+const KEY_DELAY_MSEC := 300
+
 var _label: Label
+var _opened_at_msec := 0
 
 
 func _ready() -> void:
@@ -34,11 +39,12 @@ func _ready() -> void:
 func show_results(text: String) -> void:
 	_label.text = text
 	visible = true
+	_opened_at_msec = Time.get_ticks_msec()
 	get_tree().paused = true
 
 
 func _input(event: InputEvent) -> void:
-	if visible and event is InputEventKey and event.pressed and not event.echo \
+	if visible and Time.get_ticks_msec() - _opened_at_msec >= KEY_DELAY_MSEC and event is InputEventKey and event.pressed and not event.echo \
 			and event.physical_keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
 		get_viewport().set_input_as_handled()
 		retry.emit()

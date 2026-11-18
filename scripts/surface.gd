@@ -12,8 +12,8 @@ const USE_RANGE := 90.0
 const OWNER_X := 160.0
 
 @export var walk_speed := 220.0
-## Permanent upgrades the owner sells. Add a MetaUpgradeDef .tres here to stock the shop.
-@export var meta_upgrades: Array[MetaUpgradeDef] = []
+## The upgrade items the owner sells (unlocks and upgrades). Edit the catalog .tres to stock the shop.
+@export var catalog: ItemCatalog
 
 var _dog_x := 300.0
 var _facing := 1
@@ -78,7 +78,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _near_drill():
 		get_tree().change_scene_to_file(RUN_SCENE)
 	elif _near_owner():
-		_shop.open(meta_upgrades)
+		_shop.open(catalog)
 
 
 func _near_owner() -> bool:

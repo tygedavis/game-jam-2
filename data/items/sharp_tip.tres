@@ -8,3 +8,4 @@ display_name = "Sharp Tip"
 description = "+attack damage per stack"
 property = "attack_damage"
 color = Color(0.9, 0.3, 0.3, 1)
+unlock_cost = 30

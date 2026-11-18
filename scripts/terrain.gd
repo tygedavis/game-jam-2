@@ -33,7 +33,7 @@ const PREVIEW_ROWS := 3
 ## Upgrade items that can be buried. Main fills this with the unlocked items at run start.
 @export var upgrade_defs: Array[UpgradeItemDef] = []
 ## Fraction of dirt tiles that hide an upgrade item.
-@export var upgrade_chance := 0.0015
+@export var upgrade_chance := 0.0003
 ## Ids of items the player has maxed this run; they stop spawning (other tiles are unaffected).
 var capped_upgrade_ids := {}
 

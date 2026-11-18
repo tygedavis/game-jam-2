@@ -7,6 +7,12 @@ var money := 0
 var unlocked: Array = [] # UpgradeItemDef.id() of items unlocked at the shop (issue #38)
 var item_levels := {} # UpgradeItemDef.id() -> shop upgrade level
 
+## Dev mode "infinite money": a throwaway session. While on, nothing is written to disk, and
+## leaving restores the real wallet, unlocks and levels.
+const SANDBOX_MONEY := 999999999
+var sandbox := false
+var _real := {}
+
 
 func _ready() -> void:
 	load_game()
@@ -59,7 +65,29 @@ func bank(amount: int) -> void:
 	save_game()
 
 
+## Starts the sandbox: remembers the real state and gives a huge wallet. Does nothing if already on.
+func enter_sandbox() -> void:
+	if sandbox:
+		return
+	_real = {"money": money, "unlocked": unlocked.duplicate(), "item_levels": item_levels.duplicate()}
+	sandbox = true
+	money = SANDBOX_MONEY
+
+
+## Ends the sandbox and puts the real state back. Does nothing if it is not on.
+func exit_sandbox() -> void:
+	if not sandbox:
+		return
+	money = _real["money"]
+	unlocked = _real["unlocked"]
+	item_levels = _real["item_levels"]
+	_real = {}
+	sandbox = false
+
+
 func save_game() -> void:
+	if sandbox:
+		return
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify({"money": money, "unlocked": unlocked, "item_levels": item_levels}))

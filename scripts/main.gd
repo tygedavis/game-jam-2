@@ -37,6 +37,7 @@ var _barrier_money := 0
 
 
 func _ready() -> void:
+	DevMode.run = self
 	drill.terrain = terrain
 	# Only unlocked upgrade items can be found in the ground.
 	var pool: Array[UpgradeItemDef] = []
@@ -75,6 +76,11 @@ func _ready() -> void:
 	_update_hud()
 
 
+func _exit_tree() -> void:
+	if DevMode.run == self:
+		DevMode.run = null
+
+
 func _process(delta: float) -> void:
 	camera.position = drill.position
 	var size := get_viewport_rect().size
@@ -89,7 +95,7 @@ func _process(delta: float) -> void:
 
 
 func _try_spawn() -> void:
-	if enemy_defs.is_empty() or get_tree().get_nodes_in_group("enemies").size() >= max_enemies:
+	if DevMode.spawning_paused or enemy_defs.is_empty() or get_tree().get_nodes_in_group("enemies").size() >= max_enemies:
 		return
 	if terrain.world_to_cell(drill.position).y < spawn_min_row:
 		return

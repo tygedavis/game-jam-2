@@ -12,6 +12,13 @@ var _box: VBoxContainer
 func _ready() -> void:
 	layer = 10
 	visible = false
+	# The dev mode money toggle changes the wallet under an open shop (looked up by path, as the
+	# shop must not depend on dev code).
+	var dev := get_node_or_null("/root/DevMode")
+	if dev != null:
+		dev.changed.connect(func() -> void:
+			if visible:
+				_refresh())
 	var dim := ColorRect.new()
 	dim.color = Color(0, 0, 0, 0.6)
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -101,9 +108,11 @@ func _buy(i: int) -> void:
 func _input(event: InputEvent) -> void:
 	if not visible or not (event is InputEventKey) or not event.pressed or event.echo:
 		return
-	get_viewport().set_input_as_handled()
 	var key: int = event.physical_keycode
+	# Only swallow the keys the shop uses, so other handlers (the dev panel) still see the rest.
 	if key == KEY_ESCAPE or key == KEY_SPACE:
+		get_viewport().set_input_as_handled()
 		close()
 	elif key >= KEY_1 and key <= KEY_9:
+		get_viewport().set_input_as_handled()
 		_buy(key - KEY_1)

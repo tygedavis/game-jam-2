@@ -42,7 +42,7 @@ A 2D side-view roguelite with upgrade items found buried in the ground. You play
 ### Progression (two tiers)
 - **Baseline:** the drill's own stats (e.g. attack damage) are fixed and intentionally weak. This pushes the player to explore for upgrade items instead of buying their way down.
 - **In-run (upgrade items):** found buried in the dirt. Each item is a percentage buff to one stat (e.g. +2% attack damage). Finding more of the same item adds a stack. Buffs add up (5 stacks at +2% is +10%, not compounded); for attack interval the buff means faster attacks. Each item has its own stack cap (5 for now). Stacks reset every run. Only unlocked items can appear.
-- **Permanent (meta, being reworked):** the owner unlocks items so they can spawn, and each shop upgrade raises that item's per-stack buff (e.g. 2% to 4%). The unlocked set and each item's shop level are saved. Until the shop supports this, the old stat-boost shop remains and items marked `default_unlocked` count as unlocked.
+- **Permanent (meta):** nothing starts unlocked, so the first runs are hard and find no items; the money they earn pays for the first unlock. The owner sells two things per item: Unlock (so it can spawn) and Upgrade (each shop level raises that item's per-stack buff, e.g. 2% to 4%, up to level 5 for now). Each item sets its own unlock and upgrade prices. The unlocked set and each item's shop level are saved.
 
 ### Run end and death
 - A run ends when the player chooses to return to the surface, or when they die.
@@ -57,7 +57,7 @@ A 2D side-view roguelite with upgrade items found buried in the ground. You play
 - Returning from a run puts the player back here.
 
 ### The owner (shop)
-- A character on the surface who accepts gems and money. The owner unlocks upgrade items (so they can appear in the ground) and strengthens their per-stack buffs permanently. Until then the old stat-boost shop remains. Good spot for story and personality (the partner owns the narrative direction).
+- A character on the surface who accepts gems and money. The owner unlocks upgrade items (so they can appear in the ground) and strengthens their per-stack buffs permanently. Nothing is unlocked at the start. Good spot for story and personality (the partner owns the narrative direction).
 
 ### Win condition
 - None for now. Treat it as an open-ended dig. Do not build a final depth or boss yet.
@@ -69,6 +69,8 @@ A 2D side-view roguelite with upgrade items found buried in the ground. You play
 ## Open questions
 - Enemy roster: which burrowers and tunnel dwellers exist, and what the tunnel dwellers do uniquely with pre-dug tunnels.
 - Whether pre-dug tunnels are part of every layer's generated terrain and how they are generated.
+- Other permanent upgrade types besides item unlocks and upgrades (e.g. HP).
+- The final unlock and upgrade prices, buff steps and number of shop levels.
 - Whether owner upgrades are framed as drill upgrades, dog upgrades, or both (affects naming and art).
 - Other things the surface hub should contain.
 - Jam deadline and scope cutoff (not yet given).

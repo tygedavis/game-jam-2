@@ -1,3 +1,4 @@
+@tool
 class_name TerrainProfile
 extends Resource
 ## Formula for the endless ground. Any layer without a LayerDef override uses this,
@@ -13,6 +14,12 @@ extends Resource
 @export var base_color := Color(0.55, 0.36, 0.2)
 @export var hue_step := 0.07
 @export var darken_per_layer := 0.04
+## Art for the dirt tiles of every layer that has no tile texture of its own. Tiles are 32x32 px.
+## It is multiplied by each layer's colour, so draw it light/grey to let the layer colours show through.
+## If empty, flat colours are drawn.
+@export var tile_texture: Texture2D
+## Several tile pictures side by side in one image (for variety). Number of columns; 1 = a single tile.
+@export var tile_variants := 1
 
 
 func layer_of(row: int) -> int:

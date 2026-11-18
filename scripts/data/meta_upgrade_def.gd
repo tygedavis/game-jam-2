@@ -5,7 +5,7 @@ extends Resource
 
 @export var display_name := "Upgrade"
 @export_multiline var description := ""
-@export_enum("attack_damage", "attack_interval", "attack_reach", "speed", "max_hp") var property := "attack_damage"
+@export_enum("attack_damage", "attack_interval", "speed", "max_hp") var property := "attack_damage"
 ## Applied once per purchased level (e.g. 1.15 = +15% each; 0.93 on attack_interval = faster).
 @export var multiplier := 1.15
 @export var max_level := 10

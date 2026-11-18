@@ -1,29 +1,56 @@
+@tool
 class_name Terrain
 extends Node2D
 ## Endless destructible ground. Rows < 0 are open sky; row 0 is the first dirt row, and
 ## depth and width are unbounded (the surface is the only edge). Only tiles that have been damaged or dug are stored; any other
 ## tile is untouched dirt whose HP comes from the depth formula (TerrainProfile) or a
-## LayerDef override. Visuals are placeholder rects.
+## LayerDef override. Dirt is drawn from tile textures (TerrainProfile / LayerDef), or flat colours if none.
+## @tool so the editor shows a preview of each layer's tiles (see _draw_preview).
 
-signal trinket_collected(def: TrinketDef)
+signal gem_collected(def: GemDef)
+signal upgrade_collected(def: UpgradeItemDef)
+## A barrier took damage. `fraction` is its remaining HP (0..1); `at` is on the wall.
+signal barrier_hit(layer: int, fraction: float, at: Vector2)
+## A barrier broke. `payout` is the money it awards.
+signal barrier_broken(layer: int, payout: int, at: Vector2)
 
 const TILE := 32
 const SKY_COLOR := Color(0.55, 0.75, 0.9)
 const GRASS_COLOR := Color(0.3, 0.6, 0.3)
 const GRASS_HEIGHT := 10.0
+## Editor preview size: how many layers to sample, and how many tile rows of each.
+const PREVIEW_LAYERS := 4
+const PREVIEW_ROWS := 3
 
 @export var profile: TerrainProfile
 ## Optional hand-authored layers (name, colour, HP overrides), keyed by layer_index.
 @export var overrides: Array[LayerDef] = []
 
-## Trinkets that can be buried. Edit on the Terrain node in main.tscn.
-@export var trinket_defs: Array[TrinketDef] = []
-## Fraction of dirt tiles that hide a trinket.
-@export var trinket_chance := 0.008
+## Gems that can be buried. Edit on the Terrain node in main.tscn.
+@export var gem_defs: Array[GemDef] = []
+## Fraction of dirt tiles that hide a gem.
+@export var gem_chance := 0.008
+## Upgrade items that can be buried. Main fills this with the unlocked items at run start.
+@export var upgrade_defs: Array[UpgradeItemDef] = []
+## Fraction of dirt tiles that hide an upgrade item.
+@export var upgrade_chance := 0.0003
+## Ids of items the player has maxed this run; they stop spawning (other tiles are unaffected).
+var capped_upgrade_ids := {}
+
+## Thickness of the wall between layers, in pixels. Centred on the layer boundary line.
+@export var barrier_thickness := 12.0
+## Barrier HP as a multiple of one tile's HP in the layer above it.
+@export var barrier_hp_multiplier := 15.0
+## Money for breaking the barrier into layer k is barrier_payout_base * k.
+@export var barrier_payout_base := 100
 
 var _seed := 0
+var _barriers_hp := {} # layer -> remaining HP (only barriers that have been hit)
+var _barriers_done := {} # layer -> true once broken
 var _override_by_layer := {}
 var _tiles := {} # Vector2i -> current HP (<= 0 means dug out)
+var _gem_hp := {} # Vector2i -> remaining gem durability (only gems that have been hit)
+var _gems_done := {} # Vector2i -> true once a gem has been collected
 var _view := Rect2()
 
 
@@ -55,6 +82,85 @@ func layer_name(row: int) -> String:
 	return o.display_name if o else "Layer %d" % (layer + 1)
 
 
+## World y of the boundary between layer `layer - 1` and `layer` (where its barrier sits).
+func barrier_y(layer: int) -> float:
+	return float(layer * profile.layer_height * TILE)
+
+
+func barrier_max_hp(layer: int) -> float:
+	return barrier_hp_multiplier * max_hp(layer * profile.layer_height - 1)
+
+
+func barrier_payout(layer: int) -> int:
+	return barrier_payout_base * layer
+
+
+## There is no barrier at the surface (layer 0), and a broken one never returns.
+func barrier_alive(layer: int) -> bool:
+	return layer >= 1 and not _barriers_done.has(layer)
+
+
+## Remaining HP of a barrier as a fraction (1 = untouched).
+func barrier_fraction(layer: int) -> float:
+	return _barriers_hp.get(layer, barrier_max_hp(layer)) / barrier_max_hp(layer)
+
+
+## Layer of an unbroken barrier overlapping `rect`, or -1.
+func barrier_layer_in_rect(rect: Rect2) -> int:
+	var span := float(profile.layer_height * TILE)
+	var half := barrier_thickness * 0.5
+	var first := maxi(floori((rect.position.y - half) / span), 1)
+	var last := floori((rect.end.y + half) / span)
+	for layer in range(first, last + 1):
+		if not barrier_alive(layer):
+			continue
+		var wall := Rect2(rect.position.x, barrier_y(layer) - half, rect.size.x, barrier_thickness)
+		if wall.intersects(rect):
+			return layer
+	return -1
+
+
+## Damages a barrier. Returns true if this broke it. Does nothing if it is gone.
+func damage_barrier(layer: int, amount: float, at_x: float) -> bool:
+	if not barrier_alive(layer):
+		return false
+	var left := maxf(_barriers_hp.get(layer, barrier_max_hp(layer)) - amount, 0.0)
+	_barriers_hp[layer] = left
+	var at := Vector2(at_x, barrier_y(layer))
+	queue_redraw()
+	if left > 0.0:
+		barrier_hit.emit(layer, left / barrier_max_hp(layer), at)
+		return false
+	_barriers_done[layer] = true
+	barrier_broken.emit(layer, barrier_payout(layer), at)
+	return true
+
+
+## Keeps an enemy spawn y underground (at least two tiles down) and above the first unbroken
+## barrier below the player, so nothing spawns on the far side of a wall.
+func clamp_spawn_y(y: float, player_y: float) -> float:
+	return clampf(y, TILE * 2.0, next_barrier_y(player_y) - TILE)
+
+
+## Where an enemy spawns: `distance` px from the player at `angle`. If that is below the first
+## unbroken barrier, it is mirrored upward (so it keeps its distance, and stays off screen)
+## instead of being squashed onto the player's own height.
+func spawn_position(player: Vector2, angle: float, distance: float) -> Vector2:
+	var pos := player + Vector2.from_angle(angle) * distance
+	if pos.y > next_barrier_y(player.y) - TILE:
+		pos.y = player.y - (pos.y - player.y)
+	pos.y = clamp_spawn_y(pos.y, player.y)
+	return pos
+
+
+## World y of the first unbroken barrier strictly below `from_y`.
+func next_barrier_y(from_y: float) -> float:
+	var layer := maxi(floori(from_y / float(profile.layer_height * TILE)) + 1, 1)
+	while not barrier_alive(layer):
+		layer += 1
+	return barrier_y(layer)
+
+
 func _hp_at(cell: Vector2i) -> float:
 	return _tiles.get(cell, max_hp(cell.y))
 
@@ -69,44 +175,102 @@ func is_dirt(cell: Vector2i) -> bool:
 	return cell.y >= 0 and _hp_at(cell) > 0.0
 
 
-## Damages a dirt tile. Returns true if it broke. Only the player's attacks pass
-## collect = true; a trinket in a tile broken by anything else is lost.
+## True if something still blocks the drill here: dirt, or a gem that has not been collected.
+func is_blocked(cell: Vector2i) -> bool:
+	return is_solid(cell) or _gem_alive(cell)
+
+
+## A gem is in this tile and has not been collected (it may still be buried or already exposed).
+func _gem_alive(cell: Vector2i) -> bool:
+	return cell.y >= 0 and not _gems_done.has(cell) and gem_at(cell) != null
+
+
+## True if a gem is in this tile and its surrounding dirt is gone, so it can be dug.
+func gem_exposed(cell: Vector2i) -> bool:
+	return cell.y >= 0 and _hp_at(cell) <= 0.0 and _gem_alive(cell)
+
+
+## Remaining durability of the gem in this tile as a fraction (1 = untouched).
+func gem_fraction(cell: Vector2i) -> float:
+	var def := gem_at(cell)
+	if def == null:
+		return 0.0
+	return _gem_hp.get(cell, def.durability) / def.durability
+
+
+## Damages a tile. Dirt is damaged first. Once the dirt is gone, a gem in the tile is exposed and
+## takes the damage instead, but only from the player's attacks (collect = true); collecting it
+## when its durability runs out. Enemies only ever dig dirt. Returns true if something broke.
 func damage(cell: Vector2i, amount: float, collect := false) -> bool:
-	if not is_dirt(cell):
+	if is_dirt(cell):
+		var hp := maxf(_hp_at(cell) - amount, 0.0)
+		_tiles[cell] = hp
+		queue_redraw()
+		if hp <= 0.0 and collect:
+			var upgrade := upgrade_at(cell)
+			if upgrade:
+				upgrade_collected.emit(upgrade)
+		return hp <= 0.0
+	if not collect or not gem_exposed(cell):
 		return false
-	var hp := maxf(_hp_at(cell) - amount, 0.0)
-	_tiles[cell] = hp
+	var def := gem_at(cell)
+	var left := maxf(_gem_hp.get(cell, def.durability) - amount, 0.0)
+	_gem_hp[cell] = left
 	queue_redraw()
-	if hp > 0.0:
+	if left > 0.0:
 		return false
-	if collect:
-		var trinket := trinket_at(cell)
-		if trinket:
-			trinket_collected.emit(trinket)
+	_gems_done[cell] = true
+	gem_collected.emit(def)
 	return true
 
 
-## The trinket buried in this tile, or null. Deterministic per run from the cell.
-func trinket_at(cell: Vector2i) -> TrinketDef:
-	if cell.y < 0 or trinket_defs.is_empty():
+## The gem buried in this tile, or null. Deterministic per run from the cell.
+func gem_at(cell: Vector2i) -> GemDef:
+	if cell.y < 0 or gem_defs.is_empty():
 		return null
 	var h := _mix(cell.x * 73856093 ^ cell.y * 19349663 ^ _seed)
-	if (h % 100000) / 100000.0 >= trinket_chance:
+	if (h % 100000) / 100000.0 >= gem_chance:
 		return null
 	var layer := profile.layer_of(cell.y)
 	var total := 0.0
-	for t in trinket_defs:
+	for t in gem_defs:
 		if t.min_layer <= layer:
 			total += t.weight
 	if total <= 0.0:
 		return null
 	var roll := ((_mix(h) % 100000) / 100000.0) * total
-	for t in trinket_defs:
+	for t in gem_defs:
 		if t.min_layer > layer:
 			continue
 		roll -= t.weight
 		if roll <= 0.0:
 			return t
+	return null
+
+
+## The upgrade item buried in this tile, or null. Deterministic per run from the cell. It is
+## collected when the player breaks the tile's dirt. The pick ignores the capped set so other tiles
+## keep their items; a capped pick just returns null.
+func upgrade_at(cell: Vector2i) -> UpgradeItemDef:
+	if cell.y < 0 or upgrade_defs.is_empty():
+		return null
+	var h := _mix(cell.x * 83492791 ^ cell.y * 297121507 ^ _seed ^ 0x5bd1e995)
+	if (h % 100000) / 100000.0 >= upgrade_chance:
+		return null
+	var layer := profile.layer_of(cell.y)
+	var total := 0.0
+	for u in upgrade_defs:
+		if u.min_layer <= layer:
+			total += u.weight
+	if total <= 0.0:
+		return null
+	var roll := ((_mix(h) % 100000) / 100000.0) * total
+	for u in upgrade_defs:
+		if u.min_layer > layer:
+			continue
+		roll -= u.weight
+		if roll <= 0.0:
+			return null if capped_upgrade_ids.has(u.id()) else u
 	return null
 
 
@@ -125,7 +289,45 @@ func set_view(rect: Rect2) -> void:
 	queue_redraw()
 
 
+## Draws one dirt tile at cell (x, y). `fraction` is remaining HP (1 = untouched); damage darkens it.
+func _draw_dirt(x: int, y: int, fraction: float) -> void:
+	var layer := profile.layer_of(y)
+	var o: LayerDef = _override_by_layer.get(layer)
+	var tex: Texture2D = null
+	var variants := 1
+	var tint := true # the profile's texture is tinted with the layer colour; a layer's own is not
+	if o and o.tile_texture:
+		tex = o.tile_texture
+		variants = o.tile_variants
+		tint = false
+	elif profile.tile_texture:
+		tex = profile.tile_texture
+		variants = profile.tile_variants
+	var rect := Rect2(x * TILE, y * TILE, TILE, TILE)
+	var shade := 1.0 - fraction
+	if tex == null:
+		var c := layer_color(y)
+		c = c.lightened(0.05) if (x + y) % 2 == 0 else c
+		draw_rect(rect, c.darkened(shade) if fraction < 1.0 else c)
+		return
+	variants = maxi(variants, 1)
+	var cell := Vector2(tex.get_width() / float(variants), tex.get_height())
+	var pick := (_mix(x * 73856093 ^ y * 19349663) % variants) if variants > 1 else 0
+	var modulate_color := layer_color(y) if tint else Color.WHITE
+	if fraction < 1.0:
+		modulate_color = modulate_color.darkened(shade)
+	draw_texture_rect_region(tex, rect, Rect2(Vector2(pick * cell.x, 0.0), cell), modulate_color)
+
+
+func _process(_delta: float) -> void:
+	if Engine.is_editor_hint():
+		queue_redraw() # keep the editor preview live while art or settings change
+
+
 func _draw() -> void:
+	if Engine.is_editor_hint():
+		_draw_preview()
+		return
 	# Sky above the surface, matching the surface scene, with a grass strip on row 0.
 	if _view.position.y < 0.0:
 		var top := _view.position.y - TILE
@@ -135,16 +337,71 @@ func _draw() -> void:
 	var to := world_to_cell(_view.end)
 	for y in range(maxi(from.y, 0), to.y + 1):
 		var full := max_hp(y)
-		var base := layer_color(y)
 		for x in range(from.x, to.x + 1):
-			var hp := _hp_at(Vector2i(x, y))
-			if hp <= 0.0:
+			var cell := Vector2i(x, y)
+			var hp := _hp_at(cell)
+			if hp > 0.0:
+				_draw_dirt(x, y, hp / full) # damaged tiles darken so progress is visible
+				var upgrade := upgrade_at(cell)
+				if upgrade:
+					var spot := Vector2(x + 0.5, y + 0.5) * TILE + (Vector2(6, 6) if gem_at(cell) else Vector2.ZERO)
+					draw_rect(Rect2(spot - Vector2(5, 5), Vector2(10, 10)), upgrade.color)
+			var gem := gem_at(cell)
+			if gem == null or _gems_done.has(cell):
 				continue
-			var c := base.lightened(0.05) if (x + y) % 2 == 0 else base
-			# Damaged tiles darken so progress is visible.
-			if hp < full:
-				c = c.darkened(1.0 - hp / full)
-			draw_rect(Rect2(x * TILE, y * TILE, TILE, TILE), c)
-			var trinket := trinket_at(Vector2i(x, y))
-			if trinket:
-				draw_circle(Vector2(x + 0.5, y + 0.5) * TILE, TILE * 0.22, trinket.color)
+			# A gem is drawn in its tile; once exposed, a bar shows its remaining durability.
+			var frac := gem_fraction(cell)
+			var center := Vector2(x + 0.5, y + 0.5) * TILE
+			gem.draw_at(self, center, TILE)
+			if hp <= 0.0 and frac < 1.0:
+				draw_rect(Rect2(center + Vector2(-12, 12), Vector2(24.0 * frac, 3)), Color(0.4, 1.0, 0.5))
+	_draw_barriers()
+
+
+## Draws every unbroken barrier in view as a full-width metal plate; damage tints it toward red.
+func _draw_barriers() -> void:
+	var span := float(profile.layer_height * TILE)
+	var half := barrier_thickness * 0.5
+	var first := maxi(floori((_view.position.y - half) / span), 1)
+	var last := floori((_view.end.y + half) / span)
+	for layer in range(first, last + 1):
+		if not barrier_alive(layer):
+			continue
+		var damaged := 1.0 - barrier_fraction(layer)
+		var plate := Color(0.62, 0.64, 0.7).lerp(Color(0.85, 0.2, 0.15), damaged)
+		var left := _view.position.x - TILE
+		var wall := Rect2(left, barrier_y(layer) - half, _view.size.x + TILE * 2, barrier_thickness)
+		draw_rect(wall, plate)
+		draw_rect(Rect2(wall.position, Vector2(wall.size.x, 2.0)), plate.lightened(0.45)) # highlight
+		draw_rect(Rect2(wall.position + Vector2(0, wall.size.y - 2.0), Vector2(wall.size.x, 2.0)), plate.darkened(0.45))
+
+
+## Editor-only preview: the real terrain is generated while playing, so show a sample of each of the
+## first layers (a patch of tiles, with the layer name above) and a row of the gems.
+func _draw_preview() -> void:
+	if profile == null:
+		return
+	_override_by_layer.clear()
+	for o in overrides:
+		if o:
+			_override_by_layer[o.layer_index] = o
+	var cols := 14
+	var left := -cols / 2
+	draw_rect(Rect2(left * TILE, -GRASS_HEIGHT, cols * TILE, GRASS_HEIGHT), GRASS_COLOR)
+	var row := 0
+	for layer in PREVIEW_LAYERS:
+		var first := layer * profile.layer_height
+		draw_string(ThemeDB.fallback_font, Vector2(left * TILE, row * TILE - 4.0),
+			"Layer %d: %s (preview)" % [layer + 1, layer_name(first)], HORIZONTAL_ALIGNMENT_LEFT, -1, 14)
+		# Reuse the real tile drawing, shifted from the layer's real rows into the preview grid.
+		draw_set_transform(Vector2(0.0, (row - first) * TILE))
+		for y in PREVIEW_ROWS:
+			for x in range(left, left + cols):
+				_draw_dirt(x, first + y, 1.0)
+		draw_set_transform(Vector2.ZERO)
+		row += PREVIEW_ROWS + 1
+	draw_string(ThemeDB.fallback_font, Vector2(left * TILE, row * TILE - 4.0), "Gems (preview)",
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 14)
+	for i in gem_defs.size():
+		if gem_defs[i]:
+			gem_defs[i].draw_at(self, Vector2(left + i + 0.5, row + 0.5) * TILE, TILE)

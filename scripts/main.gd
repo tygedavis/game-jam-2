@@ -5,10 +5,8 @@ const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 
 ## Enemy types that can spawn. Edit in main.tscn.
 @export var enemy_defs: Array[EnemyDef] = []
-## Upgrades offered on level-up (three are picked at random). Edit in main.tscn.
 ## Permanent upgrades (bought from the owner) applied at run start.
 @export var meta_upgrades: Array[MetaUpgradeDef] = []
-@export var upgrade_defs: Array[UpgradeDef] = []
 @export var spawn_interval := 2.0
 @export var max_enemies := 25
 ## Spawn distance from the player, in pixels (just off screen).
@@ -22,19 +20,26 @@ const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 
 var _spawn_timer := 0.0
 var _hud: Label
-var _xp_bar: ProgressBar
-var _menu: LevelUpMenu
-var _pending_levels := 0
 var _results: ResultsScreen
 var _max_row := 0
 var _kills := 0
-var _trinkets := {} # display_name -> count
-var _trinket_value := 0
+var _gems := {} # display_name -> count
+var _gem_value := 0
+var _upgrades := {} # upgrade item id -> {"name": display_name, "stacks": held this run}
+var _barriers_broken := 0
+var _barrier_money := 0
 
 
 func _ready() -> void:
 	drill.terrain = terrain
+	# Only unlocked upgrade items can be found in the ground.
+	var pool: Array[UpgradeItemDef] = []
+	for def in terrain.upgrade_defs:
+		if Save.is_unlocked(def):
+			pool.append(def)
+	terrain.upgrade_defs = pool
 	Save.apply_to(drill, meta_upgrades)
+	drill.capture_baseline()
 	drill.hp = drill.max_hp
 	# Start parked on the ground line, matching the hub drill.
 	drill.position = Vector2(0.0, -12.0)
@@ -42,25 +47,22 @@ func _ready() -> void:
 	# Draw the first frame correctly so the scene change doesn't flash.
 	terrain.set_view(Rect2(camera.position - get_viewport_rect().size * 0.5, get_viewport_rect().size))
 	drill.died.connect(_on_player_died)
-	drill.xp_changed.connect(_update_hud)
-	drill.leveled_up.connect(_on_leveled_up)
 	var layer := CanvasLayer.new()
 	_hud = Label.new()
 	_hud.position = Vector2(12, 8)
 	layer.add_child(_hud)
-	_xp_bar = ProgressBar.new()
-	_xp_bar.position = Vector2(12, 36)
-	_xp_bar.custom_minimum_size = Vector2(300, 14)
-	_xp_bar.show_percentage = false
-	layer.add_child(_xp_bar)
 	add_child(layer)
-	terrain.trinket_collected.connect(_on_trinket_collected)
+	terrain.gem_collected.connect(_on_gem_collected)
+	terrain.upgrade_collected.connect(_on_upgrade_collected)
+	terrain.barrier_broken.connect(_on_barrier_broken)
+	var effects := BarrierEffects.new()
+	add_child(effects)
+	effects.setup(camera, terrain)
+	terrain.barrier_hit.connect(func(_layer: int, fraction: float, at: Vector2) -> void: effects.on_hit(fraction, at))
+	terrain.barrier_broken.connect(func(_layer: int, payout: int, at: Vector2) -> void: effects.on_break(payout, at))
 	_results = ResultsScreen.new()
 	_results.retry.connect(_on_retry)
 	add_child(_results)
-	_menu = LevelUpMenu.new()
-	_menu.chosen.connect(_on_upgrade_chosen)
-	add_child(_menu)
 	_update_hud()
 
 
@@ -80,10 +82,8 @@ func _try_spawn() -> void:
 		return
 	if terrain.world_to_cell(drill.position).y < spawn_min_row:
 		return
-	var angle := randf() * TAU
-	var pos := drill.position + Vector2.from_angle(angle) * spawn_distance
-	# Keep spawns underground.
-	pos.y = maxf(pos.y, Terrain.TILE * 2.0)
+	# Underground, and never on the far side of an unbroken barrier.
+	var pos := terrain.spawn_position(drill.position, randf() * TAU, spawn_distance)
 	var enemy: Enemy = ENEMY_SCENE.instantiate()
 	enemy.setup(enemy_defs.pick_random(), terrain, drill)
 	enemy.position = pos
@@ -91,55 +91,48 @@ func _try_spawn() -> void:
 	add_child(enemy)
 
 
-func _on_trinket_collected(def: TrinketDef) -> void:
-	_trinkets[def.display_name] = _trinkets.get(def.display_name, 0) + 1
-	_trinket_value += def.value
+func _on_gem_collected(def: GemDef) -> void:
+	_gems[def.display_name] = _gems.get(def.display_name, 0) + 1
+	_gem_value += def.value
 
 
-func _on_enemy_killed(def: EnemyDef, _at: Vector2) -> void:
-	_kills += 1
-	drill.gain_xp(def.xp)
+func _on_barrier_broken(_layer: int, payout: int, _at: Vector2) -> void:
+	_barriers_broken += 1
+	_barrier_money += payout
+	_gem_value += payout
 
 
-func _on_leveled_up() -> void:
-	_pending_levels += 1
-	if _pending_levels == 1:
-		_offer_upgrades()
-
-
-func _offer_upgrades() -> void:
-	var pool := upgrade_defs.duplicate()
-	pool.shuffle()
-	var picks: Array[UpgradeDef] = []
-	for def in pool.slice(0, 3):
-		picks.append(def)
-	if picks.is_empty():
-		_pending_levels = 0
+func _on_upgrade_collected(def: UpgradeItemDef) -> void:
+	if not drill.add_upgrade(def, Save.item_level_of(def)):
 		return
-	_menu.offer(picks)
+	_upgrades[def.id()] = {"name": def.display_name, "stacks": drill.stacks_of(def)}
+	if drill.stacks_of(def) >= def.max_stacks:
+		terrain.capped_upgrade_ids[def.id()] = true
 
 
-func _on_upgrade_chosen(def: UpgradeDef) -> void:
-	def.apply(drill)
-	_pending_levels -= 1
-	if _pending_levels > 0:
-		_offer_upgrades()
+func _on_enemy_killed(_def: EnemyDef, _at: Vector2) -> void:
+	_kills += 1
 
 
 func _on_player_died() -> void:
-	if _menu.visible:
-		_menu.visible = false
 	var lines := PackedStringArray(["YOU WERE OVERRUN", "",
 		"Deepest: %d  (%s)" % [_max_row, terrain.layer_name(_max_row)],
-		"Level: %d    Enemies drilled: %d" % [drill.level, _kills], "", "Trinkets found:"])
-	if _trinkets.is_empty():
+		"Enemies drilled: %d" % _kills, "", "Gems found:"])
+	if _gems.is_empty():
 		lines.append("  (none)")
-	for name in _trinkets:
-		lines.append("  %s x%d" % [name, _trinkets[name]])
+	for name in _gems:
+		lines.append("  %s x%d" % [name, _gems[name]])
 	lines.append("")
-	lines.append("Total value: %d" % _trinket_value)
-	Save.bank(_trinket_value)
-	lines.append("Banked %d  (money: %d)" % [_trinket_value, Save.money])
+	lines.append("Upgrades found:")
+	if _upgrades.is_empty():
+		lines.append("  (none)")
+	for id in _upgrades:
+		lines.append("  %s x%d" % [_upgrades[id]["name"], _upgrades[id]["stacks"]])
+	lines.append("")
+	lines.append("Barriers broken: %d  (+%d)" % [_barriers_broken, _barrier_money])
+	lines.append("Total value: %d" % _gem_value)
+	Save.bank(_gem_value)
+	lines.append("Banked %d  (money: %d)" % [_gem_value, Save.money])
 	_results.show_results("\n".join(lines))
 
 
@@ -151,8 +144,7 @@ func _on_retry() -> void:
 func _update_hud() -> void:
 	var row := maxi(terrain.world_to_cell(drill.position).y, 0)
 	_max_row = maxi(_max_row, row)
-	_hud.text = "HP %d / %d    Lv %d    Depth %d (%s)    Trinkets %d (value %d)" % [
-		maxf(drill.hp, 0.0), drill.max_hp, drill.level, row, terrain.layer_name(row),
-		_trinkets.values().reduce(func(a: int, b: int) -> int: return a + b, 0), _trinket_value]
-	_xp_bar.max_value = drill.xp_to_next()
-	_xp_bar.value = drill.xp
+	var stacks := "    ".join(_upgrades.values().map(func(u: Dictionary) -> String: return "%s x%d" % [u["name"], u["stacks"]]))
+	_hud.text = "HP %d / %d    Depth %d (%s)    Gems %d (value %d)    %s" % [
+		maxf(drill.hp, 0.0), drill.max_hp, row, terrain.layer_name(row),
+		_gems.values().reduce(func(a: int, b: int) -> int: return a + b, 0), _gem_value, stacks]

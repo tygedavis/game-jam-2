@@ -11,6 +11,9 @@ var target: Drill
 var hp := 0.0
 var _flash := 0.0
 
+## The enemy art (an AutoSprite child). Its texture comes from the EnemyDef's sprite.
+@onready var _sprite: AutoSprite = $Sprite
+
 
 func setup(enemy_def: EnemyDef, ground: Terrain, player: Drill) -> void:
 	def = enemy_def
@@ -21,6 +24,11 @@ func setup(enemy_def: EnemyDef, ground: Terrain, player: Drill) -> void:
 
 func _ready() -> void:
 	add_to_group("enemies")
+	_sprite.visible = def.sprite != null
+	_sprite.texture = def.sprite
+	_sprite.hframes = def.sprite_hframes
+	_sprite.vframes = def.sprite_vframes
+	_sprite.fps = def.sprite_fps
 	# Burrow out of the ground at the spawn point so we never start embedded.
 	_clear_around(position)
 
@@ -45,6 +53,8 @@ func _physics_process(delta: float) -> void:
 	if rect().grow(1.0).intersects(target.rect()): # touching counts
 		target.take_damage(def.contact_damage)
 	_flash = maxf(_flash - delta, 0.0)
+	_sprite.flip_h = target.position.x < position.x # art faces right
+	_sprite.modulate = Color(1, 0.3, 0.3) if _flash > 0.0 else Color.WHITE # hit flash (red tint)
 	queue_redraw()
 
 
@@ -56,7 +66,8 @@ func _move_axis(offset: Vector2, delta: float) -> void:
 		return # solid: stop against the player instead of overlapping
 	var a := terrain.world_to_cell(next.position)
 	var b := terrain.world_to_cell(next.end - Vector2(0.01, 0.01))
-	var blocked := false
+	# A barrier stops enemies, but only the player can damage it.
+	var blocked := terrain.barrier_layer_in_rect(next) >= 1
 	for y in range(a.y, b.y + 1):
 		for x in range(a.x, b.x + 1):
 			var cell := Vector2i(x, y)
@@ -77,5 +88,7 @@ func _clear_around(center: Vector2) -> void:
 
 
 func _draw() -> void:
+	if def.sprite != null:
+		return # the Sprite child draws the enemy
 	var half := Vector2(def.size, def.size) * 0.5
 	draw_rect(Rect2(-half, half * 2.0), Color.WHITE if _flash > 0.0 else def.color)

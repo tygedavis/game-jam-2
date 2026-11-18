@@ -15,7 +15,7 @@ static func build_text(title: String, stats: Dictionary, earned: int, lost: int,
 		money_total: int, died: bool) -> String:
 	var lines := PackedStringArray([title, "",
 		"Deepest: %d  (%s)" % [stats["deepest"], stats["layer"]],
-		"Enemies drilled: %d" % stats["kills"], "", "Gems found:"])
+		"Enemies killed: %d" % stats["kills"], "", "Gems found:"])
 	var gems: Dictionary = stats["gems"]
 	if gems.is_empty():
 		lines.append("  (none)")

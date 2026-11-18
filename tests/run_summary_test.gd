@@ -70,7 +70,7 @@ func test_voluntary_text() -> void:
 
 func test_sections_and_empty_lists() -> void:
 	var text := RunSummary.build_text("T", _stats(), 10, 0, 10, false)
-	for section in ["Deepest:", "Enemies drilled:", "Gems found:", "Upgrades found:", "Barriers broken:"]:
+	for section in ["Deepest:", "Enemies killed:", "Gems found:", "Upgrades found:", "Barriers broken:"]:
 		_check("text has section " + section, text.contains(section))
 	_check("text lists gems and upgrades", text.contains("Ruby x2") and text.contains("Damage x3"))
 	var empty := RunSummary.build_text("T", _empty_stats(), 0, 0, 0, true)

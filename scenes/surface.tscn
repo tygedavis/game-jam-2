@@ -1,11 +1,10 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/surface.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/auto_sprite.gd" id="sprite_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/drill.png" id="drill_tex"]
 [ext_resource type="Texture2D" path="res://assets/sprites/owner.png" id="owner_tex"]
 [ext_resource type="Texture2D" path="res://assets/sprites/dog.png" id="dog_tex"]
-[ext_resource type="Script" path="res://scripts/data/item_catalog.gd" id="cscript"]
 [ext_resource type="Resource" path="res://data/item_catalog.tres" id="catalog"]
 
 [node name="Surface" type="Node2D"]

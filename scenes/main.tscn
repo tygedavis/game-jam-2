@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/terrain.gd" id="2"]
@@ -22,7 +22,6 @@
 [ext_resource type="Resource" path="res://data/gems/fossil.tres" id="19"]
 [ext_resource type="Resource" path="res://data/gems/gem.tres" id="20"]
 
-[ext_resource type="Script" path="res://scripts/data/item_catalog.gd" id="cscript"]
 [ext_resource type="Resource" path="res://data/item_catalog.tres" id="catalog"]
 
 [node name="Main" type="Node2D"]

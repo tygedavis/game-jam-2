@@ -62,6 +62,11 @@ A 2D side-view roguelite with upgrade items found buried in the ground. You play
 ### Win condition
 - None for now. Treat it as an open-ended dig. Do not build a final depth or boss yet.
 
+## Developer mode
+A testing aid, not part of the game. In debug builds only, press the backtick key (`` ` ``) to open a panel (Esc or backtick closes it; it works on the surface and in a run, and never needs function keys). It offers: **Invincible**, **Noclip** (the drill passes through dirt and barriers without digging; enemies stay solid), **Infinite money** (a throwaway session: shop purchases work but nothing is written to the save, and turning it off restores the real wallet, unlocks and levels), **Pause enemy spawning**, **Skip layer** down (breaks that layer's barrier with no payout) or up, **Kill all enemies**, and **Give item** (one stack of any upgrade item).
+- All dev code lives in `scripts/dev/`; the small `DevMode` autoload holds the toggles. Production builds (`tools/build.sh --production`) leave `scripts/dev/` out entirely, and dev mode refuses to run in release exports or when the `production` feature tag is set.
+- Nothing outside `scripts/dev/` may reference that folder (`tests/dev_isolation_test.gd` checks this).
+
 ## Art and tone
 - Target: pixel art, being made by the art/story partner. **Use placeholder shapes (colored rects, circles) until assets arrive.** Keep sprites swappable by isolating visuals from logic.
 - Tone is still to be decided with the art partner.

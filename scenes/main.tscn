@@ -1,45 +1,39 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene format=3 uid="uid://bpbgft2hr0g4g"]
 
-[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/terrain.gd" id="2"]
-[ext_resource type="Script" path="res://scripts/drill.gd" id="3"]
-[ext_resource type="Script" path="res://scripts/auto_sprite.gd" id="sprite_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/drill.png" id="drill_tex"]
-
-[ext_resource type="Script" path="res://scripts/data/layer_def.gd" id="6"]
-[ext_resource type="Script" path="res://scripts/data/terrain_profile.gd" id="7"]
-[ext_resource type="Resource" path="res://data/terrain_profile.tres" id="8"]
+[ext_resource type="Script" uid="uid://fc5ae1av5d2p" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Script" uid="uid://dp6bih3j7n3o6" path="res://scripts/terrain.gd" id="2"]
+[ext_resource type="Script" uid="uid://ce0fo7ni15yr4" path="res://scripts/drill.gd" id="3"]
 [ext_resource type="Resource" path="res://data/layers/layer_1.tres" id="4"]
 [ext_resource type="Resource" path="res://data/layers/layer_2.tres" id="5"]
-
-[ext_resource type="Script" path="res://scripts/data/enemy_def.gd" id="9"]
+[ext_resource type="Script" uid="uid://yplwgc13i5f6" path="res://scripts/data/layer_def.gd" id="6"]
+[ext_resource type="Resource" path="res://data/terrain_profile.tres" id="8"]
+[ext_resource type="Script" uid="uid://6sbjwlg7qodw" path="res://scripts/data/enemy_def.gd" id="9"]
 [ext_resource type="Resource" path="res://data/enemies/burrower.tres" id="10"]
-
-
-[ext_resource type="Script" path="res://scripts/data/gem_def.gd" id="16"]
-[ext_resource type="Resource" path="res://data/gems/bone.tres" id="17"]
-[ext_resource type="Resource" path="res://data/gems/coin.tres" id="18"]
-[ext_resource type="Resource" path="res://data/gems/fossil.tres" id="19"]
-[ext_resource type="Resource" path="res://data/gems/gem.tres" id="20"]
-
+[ext_resource type="Script" uid="uid://c0r1u8or718xh" path="res://scripts/data/gem_def.gd" id="16"]
+[ext_resource type="Resource" uid="uid://dtujcc7388x7w" path="res://data/gems/bgem.tres" id="17"]
+[ext_resource type="Resource" uid="uid://dj4qiei5lxypq" path="res://data/gems/pgem.tres" id="18"]
+[ext_resource type="Resource" uid="uid://dwb74jqv3io7k" path="res://data/gems/ggem.tres" id="19"]
+[ext_resource type="Resource" uid="uid://c8xl7surtiwtm" path="res://data/gems/ogem.tres" id="20"]
 [ext_resource type="Resource" path="res://data/item_catalog.tres" id="catalog"]
+[ext_resource type="Texture2D" uid="uid://wc6t8bq4albj" path="res://assets/sprites/drill.png" id="drill_tex"]
+[ext_resource type="Script" uid="uid://cyvk3cyddj46u" path="res://scripts/auto_sprite.gd" id="sprite_script"]
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" unique_id=1246000161]
 script = ExtResource("1")
-catalog = ExtResource("catalog")
 enemy_defs = Array[ExtResource("9")]([ExtResource("10")])
+catalog = ExtResource("catalog")
 
-[node name="Terrain" type="Node2D" parent="."]
+[node name="Terrain" type="Node2D" parent="." unique_id=186850467]
 script = ExtResource("2")
 profile = ExtResource("8")
-gem_defs = Array[ExtResource("16")]([ExtResource("17"), ExtResource("18"), ExtResource("19"), ExtResource("20")])
 overrides = Array[ExtResource("6")]([ExtResource("4"), ExtResource("5")])
+gem_defs = Array[ExtResource("16")]([ExtResource("17"), ExtResource("18"), ExtResource("19"), ExtResource("20")])
 
-[node name="Drill" type="Node2D" parent="."]
+[node name="Drill" type="Node2D" parent="." unique_id=2016255497]
 script = ExtResource("3")
 
-[node name="Sprite" type="Sprite2D" parent="Drill"]
-script = ExtResource("sprite_script")
+[node name="Sprite" type="Sprite2D" parent="Drill" unique_id=2065817877]
 texture = ExtResource("drill_tex")
+script = ExtResource("sprite_script")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1165261721]

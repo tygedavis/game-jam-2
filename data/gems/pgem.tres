@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GemDef" format=3 uid="uid://dj4qiei5lxypq"]
+
+[ext_resource type="Script" uid="uid://c0r1u8or718xh" path="res://scripts/data/gem_def.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://dofcxq3abw51a" path="res://assets/sprites/gem5.png" id="2_7cu62"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Lost Coin"
+value = 5
+durability = 15.0
+weight = 3.0
+sprite = ExtResource("2_7cu62")
+color = Color(0.95, 0.8, 0.2, 1)

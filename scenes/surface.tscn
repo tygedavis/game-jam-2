@@ -1,29 +1,31 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3 uid="uid://cp14h4fbdr4bi"]
 
-[ext_resource type="Script" path="res://scripts/surface.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/auto_sprite.gd" id="sprite_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/drill.png" id="drill_tex"]
-[ext_resource type="Texture2D" path="res://assets/sprites/owner.png" id="owner_tex"]
-[ext_resource type="Texture2D" path="res://assets/sprites/dog.png" id="dog_tex"]
+[ext_resource type="Script" uid="uid://ddo84qutc2hiu" path="res://scripts/surface.gd" id="1"]
 [ext_resource type="Resource" path="res://data/item_catalog.tres" id="catalog"]
+[ext_resource type="Texture2D" uid="uid://ebrxxkupao7i" path="res://assets/sprites/dog.png" id="dog_tex"]
+[ext_resource type="Texture2D" uid="uid://wc6t8bq4albj" path="res://assets/sprites/drill.png" id="drill_tex"]
+[ext_resource type="Texture2D" uid="uid://cn84kgevlfs7x" path="res://assets/sprites/owner.png" id="owner_tex"]
+[ext_resource type="Script" uid="uid://cyvk3cyddj46u" path="res://scripts/auto_sprite.gd" id="sprite_script"]
 
-[node name="Surface" type="Node2D"]
+[node name="Surface" type="Node2D" unique_id=2143437769]
 script = ExtResource("1")
 catalog = ExtResource("catalog")
 
-[node name="Drill" type="Sprite2D" parent="."]
+[node name="Drill" type="Sprite2D" parent="." unique_id=1118353064]
 position = Vector2(640, 360)
-script = ExtResource("sprite_script")
 texture = ExtResource("drill_tex")
-
-[node name="Owner" type="Sprite2D" parent="."]
-position = Vector2(160, 372)
 script = ExtResource("sprite_script")
+
+[node name="Owner" type="Sprite2D" parent="." unique_id=870689793]
+position = Vector2(160, 372)
 texture = ExtResource("owner_tex")
+offset = Vector2(0, -31)
+script = ExtResource("sprite_script")
 anchor_bottom = true
 
-[node name="Dog" type="Sprite2D" parent="."]
+[node name="Dog" type="Sprite2D" parent="." unique_id=2043927370]
 position = Vector2(300, 366)
-script = ExtResource("sprite_script")
 texture = ExtResource("dog_tex")
+offset = Vector2(0, -16)
+script = ExtResource("sprite_script")
 anchor_bottom = true

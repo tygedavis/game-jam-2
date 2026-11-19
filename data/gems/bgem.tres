@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GemDef" format=3 uid="uid://dtujcc7388x7w"]
+
+[ext_resource type="Script" uid="uid://c0r1u8or718xh" path="res://scripts/data/gem_def.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://vrm3i3ux15u5" path="res://assets/sprites/gem3-sheet.png" id="2_6vtiv"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Old Bone"
+durability = 10.0
+weight = 6.0
+sprite = ExtResource("2_6vtiv")
+color = Color(0.93, 0.9, 0.8, 1)

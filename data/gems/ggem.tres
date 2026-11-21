@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GemDef" format=3 uid="uid://dwb74jqv3io7k"]
+
+[ext_resource type="Script" uid="uid://c0r1u8or718xh" path="res://scripts/data/gem_def.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://blly7bnu84dqg" path="res://assets/sprites/gem2.png" id="2_770d0"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Fossil"
+value = 15
+durability = 30.0
+weight = 3.0
+min_layer = 1
+sprite = ExtResource("2_770d0")
+color = Color(0.7, 0.65, 0.55, 1)

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8kjuxmuywfs8"
-path="res://.godot/imported/trinket_coin.png-8629f5f4bf3829d39e02cb341aeecb02.ctex"
+uid="uid://vrm3i3ux15u5"
+path="res://.godot/imported/gem3-sheet.png-ca8c1aa68839b411063e25ac74fa445a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/trinket_coin.png"
-dest_files=["res://.godot/imported/trinket_coin.png-8629f5f4bf3829d39e02cb341aeecb02.ctex"]
+source_file="res://assets/sprites/gem3-sheet.png"
+dest_files=["res://.godot/imported/gem3-sheet.png-ca8c1aa68839b411063e25ac74fa445a.ctex"]
 
 [params]
 

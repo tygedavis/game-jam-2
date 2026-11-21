@@ -1,10 +1,38 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://crpf2kmptsqv1"]
 
-[ext_resource type="Script" path="res://scripts/enemy.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/auto_sprite.gd" id="2"]
+[ext_resource type="Script" uid="uid://ykjehuhsndpq" path="res://scripts/enemy.gd" id="1"]
+[ext_resource type="Script" uid="uid://cyvk3cyddj46u" path="res://scripts/auto_sprite.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c5uogphrxmv2b" path="res://assets/sprites/wiggle-Sheet.png" id="3_4ra3w"]
 
-[node name="Enemy" type="Node2D"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_5uy6h"]
+atlas = ExtResource("3_4ra3w")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c4w8v"]
+atlas = ExtResource("3_4ra3w")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6s0ab"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5uy6h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c4w8v")
+}],
+"loop": 1,
+"name": &"wriggle",
+"speed": 5.0
+}]
+
+[node name="Enemy" type="Node2D" unique_id=140082160]
 script = ExtResource("1")
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1349890332]
 script = ExtResource("2")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Sprite" unique_id=2007281081]
+sprite_frames = SubResource("SpriteFrames_6s0ab")
+animation = &"wriggle"
+frame_progress = 0.10946207

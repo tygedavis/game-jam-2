@@ -8,7 +8,7 @@
 [ext_resource type="Script" uid="uid://yplwgc13i5f6" path="res://scripts/data/layer_def.gd" id="6"]
 [ext_resource type="Resource" path="res://data/terrain_profile.tres" id="8"]
 [ext_resource type="Script" uid="uid://6sbjwlg7qodw" path="res://scripts/data/enemy_def.gd" id="9"]
-[ext_resource type="Resource" path="res://data/enemies/burrower.tres" id="10"]
+[ext_resource type="Resource" uid="uid://d01so1xi06ppi" path="res://data/enemies/burrower.tres" id="10"]
 [ext_resource type="Script" uid="uid://c0r1u8or718xh" path="res://scripts/data/gem_def.gd" id="16"]
 [ext_resource type="Resource" uid="uid://dtujcc7388x7w" path="res://data/gems/bgem.tres" id="17"]
 [ext_resource type="Resource" uid="uid://dj4qiei5lxypq" path="res://data/gems/pgem.tres" id="18"]

@@ -67,6 +67,10 @@ func _process(delta: float) -> void:
 	_prompt.visible = _near_drill() and not _shop.visible
 	_owner_prompt.visible = _near_owner() and not _shop.visible
 	queue_redraw()
+	
+	#Music player
+	if $AudioStreamPlayer.playing == false:
+		$AudioStreamPlayer.play()
 
 
 func _unhandled_input(event: InputEvent) -> void:

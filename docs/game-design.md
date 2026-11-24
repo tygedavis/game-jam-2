@@ -33,8 +33,12 @@ A 2D side-view roguelite with upgrade items found buried in the ground. You play
 - **No spawn camping:** enemies never spawn on the far side of an unbroken barrier; they only spawn in the player's current layer and above.
 
 ### Combat
-- Attacking is player-issued: hold left click to fire projectiles toward the mouse cursor. Upgrades add or modify them.
-- **Dig and attack are separate.** Digging is automatic on dirt contact (dirt takes damage against its layer hardness and breaks). The attack is a ranged projectile aimed at the mouse cursor (hold left click); it hits the first enemy in its path and stops at solid dirt. For now dig power is derived from the attack stats (damage / interval), so attack upgrades also speed up digging.
+- Attacking is player-issued and mouse-aimed (the cursor is a target reticle during a run). There are two weapon slots:
+  - **Primary** (hold left click): reliable. You start with the basic gun, which fires projectiles. Upgrade items buff it. Basic primaries are meant to be bought on the surface (#12).
+  - **Secondary** (hold right click): wacky, powerful and a little unreliable, found in the map (#12). Each weapon has its own limit: the flamethrower runs on a fuel timer that drains while firing and recharges when idle; a bomb would use a cooldown. A HUD meter shows the secondary's limit.
+  - Weapons are data-driven: a `WeaponDef` (`data/weapons/*.tres`) holds a behavior (the mechanic) and a limiter (the firing rule). A variant is a new `.tres`; a new mechanic or limiter is one script in `scripts/weapons/`. List new weapons in `data/weapon_catalog.tres`.
+  - Secondaries that clear dirt (flamethrower, later a bomb) use their own fixed dirt damage, not the primary's dig power or upgrades. They never collect gems or upgrade items; the player still has to mine those. They cannot damage layer barriers.
+- **Dig and attack are separate.** Digging is automatic on dirt contact (dirt takes damage against its layer hardness and breaks). The attack is a ranged projectile aimed at the mouse cursor (hold left click); it hits the first enemy in its path and stops at solid dirt. For now dig power is derived from the primary's attack stats (damage / interval), so attack upgrades also speed up digging.
 - Because of this, dig power and attack power are still tied together. A layer's hardness acts as a soft block when the drill's attack damage can't break it effectively. Keep this in mind when designing upgrades: some may affect only dirt or only enemies, but the base stats are shared.
 - **Burrowers:** most enemies dig through the dirt toward the player. They tunnel through terrain themselves, so they can come from any direction, including through undisturbed ground.
 - **Tunnel dwellers:** some enemies live in pre-dug tunnels that exist before the player arrives and do something unique with them (behavior TBD, e.g. patrolling, ambushing, using the tunnel network as cover or shortcuts). These give each layer places that feel inhabited.
@@ -84,7 +88,7 @@ A testing aid, not part of the game. In debug builds only, press the backtick ke
 - Barrier tuning: HP multiple, payout per layer, and whether broken barriers should ever persist across runs.
 - The upgrade item list (stats, buff sizes, caps, prices), weapon list, gem list, layer count, and names for each layer.
 - Gamepad support (aiming would need a stick). Digging has no trigger; attacks are aimed with the mouse.
-- Whether extra weapons (beyond the dig attack) exist, and if they auto-target enemies only or can also break dirt.
+- Weapon finding and unlocks (#12): chests with 2-3 secondaries to choose from, primary chests (permanent unlock or stronger for one run), modifier chests, surface purchase of primaries, per-weapon upgrades and special abilities, and the rest of the secondary list (bomb, chain lightning, ...).
 - Story and owner characterization.
 
 ## Guidance for agents

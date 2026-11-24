@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_def.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/weapons/projectile_behavior.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/weapons/cooldown_limiter.gd" id="3"]
+
+[sub_resource type="Resource" id="Behavior"]
+script = ExtResource("2")
+speed = 600.0
+
+[sub_resource type="Resource" id="Limiter"]
+script = ExtResource("3")
+interval = 0.4
+
+[resource]
+script = ExtResource("1")
+display_name = "Basic Gun"
+description = "Fires a projectile toward the cursor."
+slot = 0
+damage = 10.0
+scales_with_drill_stats = true
+behavior = SubResource("Behavior")
+limiter = SubResource("Limiter")
+color = Color(1, 0.9, 0.4, 1)

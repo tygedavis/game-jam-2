@@ -2,16 +2,15 @@ class_name Drill
 extends Node2D
 ## Player drill vehicle. Moves in four directions; blocked by dirt.
 ## Digging is automatic: whenever dirt or a gem touches the drill's leading edge, it damages that
-## dirt continuously. The auto-attack (until the mouse attack replaces it) only hits enemies.
-## Dig power is derived from the attack stats, so attack upgrades also speed up digging.
+## dirt continuously. Attacks come from weapons: a primary (left click) and an optional secondary
+## (right click), both aimed at the mouse. See scripts/weapons/.
+## Dig power is derived from the primary's attack stats, so attack upgrades also speed up digging.
 
 @export var speed := 180.0
 ## Seconds between attacks.
 @export var attack_interval := 0.4
 ## Damage per attack.
 @export var attack_damage := 10.0
-## Projectile speed, in pixels per second.
-@export var projectile_speed := 600.0
 ## How close (px) the drill must be to dirt, in the steering direction, to dig it.
 @export var dig_contact := 4.0
 
@@ -26,11 +25,14 @@ var hp := 0.0
 var _invuln := 0.0
 var facing := Vector2i.DOWN
 var _half := Vector2(12, 12)
-var _attack_timer := 0.0
+## The weapons in the two slots. The primary is the default weapon; the secondary starts empty.
+var primary: Weapon
+var secondary: Weapon
 ## Stats before any upgrade item, and the items found this run (id -> {def, stacks, level}).
 var _baseline := {}
 var _items := {}
 
+const DEFAULT_PRIMARY := preload("res://data/weapons/basic_gun.tres")
 const BUFFED_PROPERTIES := ["attack_damage", "attack_interval", "speed"]
 
 ## The drill art (an AutoSprite child named Sprite). Artists swap its texture in the editor.
@@ -40,6 +42,17 @@ const BUFFED_PROPERTIES := ["attack_damage", "attack_interval", "speed"]
 
 func _ready() -> void:
 	hp = max_hp
+	if primary == null:
+		equip(DEFAULT_PRIMARY)
+
+
+## Puts a weapon in the slot its def names, replacing what was there.
+func equip(def: WeaponDef) -> void:
+	var weapon := Weapon.create(def)
+	if def.slot == WeaponDef.SLOT_SECONDARY:
+		secondary = weapon
+	else:
+		primary = weapon
 
 
 ## A DevMode toggle. Looked up by path (not the DevMode identifier) so this script still compiles
@@ -116,10 +129,11 @@ func _physics_process(delta: float) -> void:
 	if not _dev_flag(&"noclip"):
 		_dig(delta) # digs whatever the leading edge touches, even when standing still
 
-	_attack_timer = maxf(_attack_timer - delta, 0.0)
-	if _attack_timer <= 0.0 and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		_attack_timer = attack_interval
-		_attack()
+	var aim := aim_from(get_global_mouse_position())
+	if primary:
+		primary.update(self, delta, Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT), aim)
+	if secondary:
+		secondary.update(self, delta, Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT), aim)
 	_update_visuals()
 	queue_redraw()
 
@@ -215,14 +229,12 @@ func _dig(delta: float) -> void:
 		terrain.damage_barrier(barrier, damage_this_frame, contact_rect.get_center().x)
 
 
-## Fires one projectile from the drill's center toward the mouse cursor.
-func _attack() -> void:
-	var direction := get_global_mouse_position() - global_position
+## Unit direction from the drill toward a world position; the facing direction if they coincide.
+func aim_from(world_target: Vector2) -> Vector2:
+	var direction := world_target - global_position
 	if direction.is_zero_approx():
-		direction = Vector2(facing)
-	var shot := Projectile.new()
-	shot.setup(terrain, position, direction, projectile_speed, attack_damage)
-	get_parent().add_child(shot)
+		return Vector2(facing)
+	return direction.normalized()
 
 
 func _update_visuals() -> void:

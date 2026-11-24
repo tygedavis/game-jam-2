@@ -78,9 +78,11 @@ func _ready() -> void:
 	_return_prompt.declined.connect(_on_return_declined)
 	add_child(_return_prompt)
 	_update_hud()
+	Reticle.apply()
 
 
 func _exit_tree() -> void:
+	Reticle.clear()
 	if DevMode.run == self:
 		DevMode.run = null
 

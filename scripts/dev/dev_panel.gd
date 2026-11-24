@@ -4,8 +4,11 @@ extends CanvasLayer
 ## Lives in scripts/dev/, which production builds leave out; DevMode loads it by path.
 
 ## Controls by key, so tests can drive them: invincible, noclip, infinite_money, spawning_paused,
-## skip_down, skip_up, kill, item_list, give, status.
+## skip_down, skip_up, kill, item_list, give, weapon_list, equip, status.
 var controls := {}
+
+## The weapons listed in weapon_list, in order.
+var _weapons: Array[WeaponDef] = []
 
 var _open := false
 ## True if opening the panel is what paused the game. Closing then unpauses it; if something else
@@ -44,6 +47,7 @@ func set_open(open: bool) -> void:
 	_window.visible = open
 	if open:
 		_fill_items()
+		_fill_weapons()
 	_refresh()
 
 
@@ -102,6 +106,13 @@ func _build() -> void:
 	row.add_child(list)
 	controls["item_list"] = list
 	_add_button(row, "give", "Give 1 stack", _give_selected)
+	var weapon_row := HBoxContainer.new()
+	col.add_child(weapon_row)
+	var weapons := OptionButton.new()
+	weapons.custom_minimum_size = Vector2(260, 0)
+	weapon_row.add_child(weapons)
+	controls["weapon_list"] = weapons
+	_add_button(weapon_row, "equip", "Equip weapon", _equip_selected)
 
 
 func _add_toggle(parent: Node, key: String, text: String, on_toggled: Callable) -> void:
@@ -128,6 +139,25 @@ func _give_selected() -> void:
 	DevActions.give_item(run, run.catalog.items[list.selected])
 
 
+func _equip_selected() -> void:
+	var list: OptionButton = controls["weapon_list"]
+	if list.selected < 0 or list.selected >= _weapons.size():
+		return
+	DevActions.equip_weapon(DevMode.run, _weapons[list.selected])
+
+
+func _fill_weapons() -> void:
+	var list: OptionButton = controls["weapon_list"]
+	list.clear()
+	_weapons.clear()
+	var catalog: WeaponCatalog = load("res://data/weapon_catalog.tres")
+	if catalog == null:
+		return
+	for def in catalog.weapons:
+		_weapons.append(def)
+		list.add_item("%s (%s)" % [def.display_name, "secondary" if def.slot == WeaponDef.SLOT_SECONDARY else "primary"])
+
+
 func _fill_items() -> void:
 	var list: OptionButton = controls["item_list"]
 	list.clear()
@@ -144,9 +174,10 @@ func _refresh() -> void:
 	for key in ["invincible", "noclip", "infinite_money", "spawning_paused"]:
 		(controls[key] as CheckButton).set_pressed_no_signal(DevMode.get(key))
 	var in_run := DevMode.run != null
-	for key in ["skip_down", "skip_up", "kill", "give"]:
+	for key in ["skip_down", "skip_up", "kill", "give", "equip"]:
 		(controls[key] as Button).disabled = not in_run
 	(controls["item_list"] as OptionButton).disabled = not in_run
+	(controls["weapon_list"] as OptionButton).disabled = not in_run
 	var status: Label = controls["status"]
 	status.text = DevMode.status_text()
 	status.visible = status.text != ""

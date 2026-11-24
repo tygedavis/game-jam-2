@@ -31,6 +31,7 @@ class TwoShots extends WeaponLimiter:
 
 func _initialize() -> void:
 	_test_basic_gun()
+	_test_flamethrower()
 	_test_catalog()
 	_test_instances_do_not_share_state()
 	_test_extensible()
@@ -48,6 +49,14 @@ func _test_basic_gun() -> void:
 	check("basic_gun matches the old drill defaults", is_equal_approx((d.limiter as CooldownLimiter).interval, 0.4) and is_equal_approx((d.behavior as ProjectileBehavior).speed, 600.0) and is_equal_approx(d.damage, 10.0))
 
 
+func _test_flamethrower() -> void:
+	var d: WeaponDef = load("res://data/weapons/flamethrower.tres")
+	check("flamethrower loads and is a secondary", d != null and d.slot == WeaponDef.SLOT_SECONDARY)
+	check("flamethrower id is the file name", d.id() == "flamethrower")
+	check("flamethrower uses fuel and a flame behavior", d.limiter is FuelLimiter and d.behavior is FlamethrowerBehavior)
+	check("flamethrower does not scale with the drill", not d.scales_with_drill_stats)
+
+
 func _test_catalog() -> void:
 	var c: WeaponCatalog = load("res://data/weapon_catalog.tres")
 	check("catalog loads", c != null)
@@ -55,6 +64,7 @@ func _test_catalog() -> void:
 	for w in c.weapons:
 		ids[w.id()] = true
 	check("catalog contains basic_gun", ids.has("basic_gun"))
+	check("catalog contains flamethrower", ids.has("flamethrower"))
 	check("catalog ids are unique", ids.size() == c.weapons.size())
 
 

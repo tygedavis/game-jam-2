@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_def.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/weapons/flamethrower_behavior.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/weapons/fuel_limiter.gd" id="3"]
+
+[sub_resource type="Resource" id="Behavior"]
+script = ExtResource("2")
+range_px = 96.0
+cone_half_angle_degrees = 25.0
+dirt_damage_per_second = 60.0
+enemy_damage_per_second = 30.0
+
+[sub_resource type="Resource" id="Limiter"]
+script = ExtResource("3")
+capacity = 2.0
+drain_per_second = 1.0
+recharge_per_second = 0.5
+resume_fraction = 0.25
+
+[resource]
+script = ExtResource("1")
+display_name = "Flamethrower"
+description = "Short-range flame that burns through dirt. Runs on a fuel timer."
+slot = 1
+behavior = SubResource("Behavior")
+limiter = SubResource("Limiter")
+color = Color(1, 0.5, 0.1, 1)

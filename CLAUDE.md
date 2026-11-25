@@ -1,6 +1,7 @@
 # game-jam-2
 - Godot 4.7, GDScript, 2D, Compatibility renderer. Godot binary: `/home/tygedavis/.local/bin/godot`.
 - Run headless check: `godot --headless --path . --quit`. Run tests: `godot --headless --import` once, then `bash tests/run_all.sh`.
+- Lint GDScript: `gdlint scripts tests` (gdtoolkit 4.5.0, rules in `gdlintrc`); CI enforces it. `tools/check_export_presets.sh` checks `export_presets.cfg` for secrets and absolute paths.
 - Developer mode (backtick panel, debug-only) lives in `scripts/dev/` (see `docs/game-design.md`). Nothing outside that folder may reference it, except `DevMode`'s one `load()`. Export with `tools/build.sh --production <preset>`, never plain `godot --export-release`.
 - Dev happens in a Podman container: `container/run.sh <cmd>` (image `game-jam-2-dev`, build per README). Never run npm on the host.
 - Godot MCP runs in that container; project path inside it is `/workspace`.

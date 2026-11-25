@@ -1,0 +1,10 @@
+# gdlint (gdtoolkit) configuration. Run: gdlint scripts tests
+# Rules disabled because the existing code base doesn't follow them or uses the
+# pattern on purpose; the remaining defaults still catch naming, unused args, etc.
+disable:
+- class-definitions-order
+- max-public-methods
+# Determinism tests compare a call with itself on purpose.
+- comparison-with-itself
+- duplicated-load
+max-line-length: 160

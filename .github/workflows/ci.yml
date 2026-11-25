@@ -12,6 +12,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: GDScript lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install gdtoolkit
+        run: pip install "gdtoolkit==4.5.0"
+
+      - name: Lint (rules in gdlintrc)
+        run: gdlint scripts tests
+
+  export-presets-guard:
+    name: export_presets.cfg has no secrets or local paths
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: bash tools/check_export_presets.sh
+
   load-check:
     name: Project loads
     runs-on: ubuntu-latest

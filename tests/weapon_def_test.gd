@@ -46,7 +46,12 @@ func _test_basic_gun() -> void:
 	check("basic_gun scales with drill stats", d.scales_with_drill_stats)
 	check("basic_gun behavior is a ProjectileBehavior", d.behavior is ProjectileBehavior)
 	check("basic_gun limiter is a CooldownLimiter", d.limiter is CooldownLimiter)
-	check("basic_gun matches the old drill defaults", is_equal_approx((d.limiter as CooldownLimiter).interval, 0.4) and is_equal_approx((d.behavior as ProjectileBehavior).speed, 600.0) and is_equal_approx(d.damage, 10.0))
+	check(
+		"basic_gun matches the old drill defaults",
+		is_equal_approx((d.limiter as CooldownLimiter).interval, 0.4)
+		and is_equal_approx((d.behavior as ProjectileBehavior).speed, 600.0)
+		and is_equal_approx(d.damage, 10.0)
+	)
 
 
 func _test_flamethrower() -> void:

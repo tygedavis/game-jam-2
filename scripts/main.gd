@@ -92,6 +92,8 @@ func _process(delta: float) -> void:
 	_update_hud()
 	if not _ended and _gate.update(terrain.world_to_cell(drill.position).y):
 		_return_prompt.open()
+	
+	
 
 
 func _try_spawn() -> void:

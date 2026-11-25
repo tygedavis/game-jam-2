@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cp14h4fbdr4bi"]
 
 [ext_resource type="Script" uid="uid://ddo84qutc2hiu" path="res://scripts/surface.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://7m5tae3iv5b3" path="res://music/music 1.mp3" id="7_gtwyy"]
 [ext_resource type="Resource" path="res://data/item_catalog.tres" id="catalog"]
 [ext_resource type="Texture2D" uid="uid://ebrxxkupao7i" path="res://assets/sprites/dog.png" id="dog_tex"]
 [ext_resource type="Texture2D" uid="uid://wc6t8bq4albj" path="res://assets/sprites/drill.png" id="drill_tex"]
@@ -29,3 +30,7 @@ texture = ExtResource("dog_tex")
 offset = Vector2(0, -16)
 script = ExtResource("sprite_script")
 anchor_bottom = true
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=2879590]
+stream = ExtResource("7_gtwyy")
+volume_db = -11.783

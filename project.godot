@@ -30,6 +30,10 @@ window/stretch/mode="canvas_items"
 
 project/assembly_name="game-jam-2"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/AsepriteWizard/plugin.cfg")
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

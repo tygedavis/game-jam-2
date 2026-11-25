@@ -1,15 +1,10 @@
-[gd_resource type="Resource" script_class="EnemyDef" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="EnemyDef" format=3 uid="uid://d01so1xi06ppi"]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/burrower.png" id="tex"]
-[ext_resource type="Script" path="res://scripts/data/enemy_def.gd" id="1"]
+[ext_resource type="Script" uid="uid://6sbjwlg7qodw" path="res://scripts/data/enemy_def.gd" id="1"]
+
+[sub_resource type="AnimatedTexture" id="AnimatedTexture_3v87y"]
 
 [resource]
 script = ExtResource("1")
 display_name = "Burrower"
-max_hp = 20.0
-speed = 90.0
-contact_damage = 10.0
-dig_dps = 40.0
-color = Color(0.8, 0.3, 0.35, 1)
-size = 22.0
-sprite = ExtResource("tex")
+sprite = SubResource("AnimatedTexture_3v87y")

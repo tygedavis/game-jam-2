@@ -22,7 +22,7 @@ jobs:
             dir: windows
             artifact: game-jam-2-windows
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install export templates
         run: |

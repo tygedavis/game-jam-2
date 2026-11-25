@@ -77,6 +77,18 @@ func test_spawn_clamp() -> void:
 	t.damage_barrier(1, t.barrier_max_hp(1), 0.0)
 	_check("spawn: limit moves down once the barrier breaks", t.clamp_spawn_y(5000.0, 100.0) == 2560.0 - 32.0)
 	t.free()
+	t = _terrain()
+	# A big enemy must clear the wall's top edge (barrier_thickness/2 above the line) with its half size.
+	for size in [22.0, 52.0, 80.0]:
+		var y := t.clamp_spawn_y(5000.0, 100.0, size)
+		var wall_top := 1280.0 - t.barrier_thickness * 0.5
+		_check("spawn: size %d stays clear of the wall" % int(size), y + size * 0.5 <= wall_top)
+		_check("spawn: size %d not embedded in the barrier" % int(size),
+			t.barrier_layer_in_rect(Rect2(0.0, y - size * 0.5, size, size)) == -1)
+	_check("spawn: small enemies keep the one-tile margin", t.clamp_spawn_y(5000.0, 100.0, 22.0) == 1280.0 - 32.0)
+	var big := t.spawn_position(Vector2(0.0, 1250.0), PI * 0.5, 700.0, 80.0)
+	_check("spawn pos: big enemy clears the wall", big.y + 40.0 <= 1280.0 - t.barrier_thickness * 0.5)
+	t.free()
 
 
 func test_spawn_position_stays_off_screen() -> void:

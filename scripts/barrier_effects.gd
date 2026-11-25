@@ -42,6 +42,15 @@ func _exit_tree() -> void:
 	Engine.time_scale = 1.0 # never leave the game in slow motion
 
 
+func _notification(what: int) -> void:
+	# _process stops while the tree is paused (level-up menu, death screen), so a shake in progress
+	# would leave the camera stuck off-centre. Cancel it and recentre instead.
+	if what == NOTIFICATION_PAUSED:
+		_shake_time = 0.0
+		if _camera != null:
+			_camera.offset = Vector2.ZERO
+
+
 func _process(delta: float) -> void:
 	_flash = maxf(_flash - delta, 0.0)
 	_spark_cooldown = maxf(_spark_cooldown - delta, 0.0)
@@ -93,8 +102,13 @@ func _add_shake(amount: float, time: float) -> void:
 
 func _hit_stop() -> void:
 	Engine.time_scale = HIT_STOP_SCALE
-	# process_always, process_in_physics, ignore_time_scale: counts real seconds.
-	await get_tree().create_timer(HIT_STOP_TIME, true, false, true).timeout
+	# process_always, process_in_physics, ignore_time_scale: counts real seconds. A signal
+	# connection (not an await) is dropped automatically if this node is freed first, so nothing
+	# resumes on a freed instance; _exit_tree restores the time scale in that case.
+	get_tree().create_timer(HIT_STOP_TIME, true, false, true).timeout.connect(_end_hit_stop)
+
+
+func _end_hit_stop() -> void:
 	Engine.time_scale = 1.0
 
 
@@ -116,6 +130,9 @@ func _burst(at: Vector2, count: int, color: Color, speed: float, life: float, gr
 	if spread_x > 0.0:
 		p.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
 		p.emission_rect_extents = Vector2(spread_x, 4.0)
+	# Keep simulating while the tree is paused, so a burst still plays out (instead of freezing and
+	# then vanishing) when a menu opens right after a break; the cleanup timer ignores pause too.
+	p.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(p)
 	p.emitting = true
 	get_tree().create_timer(life + 0.5, true, false, true).timeout.connect(p.queue_free)

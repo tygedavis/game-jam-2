@@ -1,0 +1,52 @@
+name: Issue in progress
+
+# Labels issues linked to an open PR as "in progress", and removes the label
+# again when the PR is closed. (Merged PRs close their issue via "Closes #N";
+# that only happens automatically when the PR targets the default branch.)
+#
+# pull_request_target is used so the workflow has a write token for PRs from
+# forks. It never checks out or runs PR code.
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, edited, closed]
+    branches: [develop, main]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+env:
+  LABEL: in progress
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update labels on linked issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          STATE: ${{ github.event.pull_request.state }}
+        run: |
+          set -euo pipefail
+
+          # Make sure the label exists (no-op if it already does).
+          gh label create "$LABEL" --repo "$REPO" --color FBCA04 \
+            --description "A pull request is open for this issue" 2>/dev/null || true
+
+          # Issues the PR closes: "Closes #N" in the description or a manual link.
+          issues=$(gh pr view "$PR" --repo "$REPO" \
+            --json closingIssuesReferences \
+            --jq '.closingIssuesReferences[].number')
+
+          for n in $issues; do
+            if [ "$STATE" = "open" ]; then
+              echo "Adding '$LABEL' to #$n"
+              gh issue edit "$n" --repo "$REPO" --add-label "$LABEL"
+            else
+              echo "Removing '$LABEL' from #$n"
+              gh issue edit "$n" --repo "$REPO" --remove-label "$LABEL"
+            fi
+          done

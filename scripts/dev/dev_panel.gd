@@ -150,10 +150,7 @@ func _fill_weapons() -> void:
 	var list: OptionButton = controls["weapon_list"]
 	list.clear()
 	_weapons.clear()
-	var catalog: WeaponCatalog = load("res://data/weapon_catalog.tres")
-	if catalog == null:
-		return
-	for def in catalog.weapons:
+	for def in WeaponCatalog.all():
 		_weapons.append(def)
 		list.add_item("%s (%s)" % [def.display_name, "secondary" if def.slot == WeaponDef.SLOT_SECONDARY else "primary"])
 

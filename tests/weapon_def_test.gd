@@ -58,14 +58,19 @@ func _test_flamethrower() -> void:
 
 
 func _test_catalog() -> void:
-	var c: WeaponCatalog = load("res://data/weapon_catalog.tres")
-	check("catalog loads", c != null)
+	var defs := WeaponCatalog.all()
+	var files := Array(ResourceLoader.list_directory(WeaponCatalog.WEAPON_DIR)).filter(func(f: String) -> bool: return f.ends_with(".tres"))
+	check("catalog finds every weapon file in data/weapons/", defs.size() == files.size() and defs.size() >= 2)
 	var ids := {}
-	for w in c.weapons:
-		ids[w.id()] = true
+	var sorted := true
+	for i in defs.size():
+		ids[defs[i].id()] = true
+		if i > 0 and defs[i - 1].id() > defs[i].id():
+			sorted = false
+	check("catalog is sorted by id", sorted)
 	check("catalog contains basic_gun", ids.has("basic_gun"))
 	check("catalog contains flamethrower", ids.has("flamethrower"))
-	check("catalog ids are unique", ids.size() == c.weapons.size())
+	check("catalog ids are unique", ids.size() == defs.size())
 
 
 func _test_instances_do_not_share_state() -> void:

@@ -1,7 +1,7 @@
 class_name WeaponDef
 extends Resource
 ## A weapon. Add one by creating a WeaponDef .tres (file name is its id) and listing it in
-## data/weapon_catalog.tres. Its mechanic is a WeaponBehavior and its firing rule a WeaponLimiter;
+## data/weapons/ (WeaponCatalog finds it there). Its mechanic is a WeaponBehavior and its firing rule a WeaponLimiter;
 ## both are resources, so a variant is just new values and a new mechanic is one new script.
 
 const SLOT_PRIMARY := 0

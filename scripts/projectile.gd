@@ -44,7 +44,7 @@ func _hit_something() -> bool:
 		return true
 	for node in get_tree().get_nodes_in_group("enemies"):
 		var enemy := node as Enemy
-		if enemy and enemy.rect().intersects(hit_box):
+		if enemy and not enemy.is_dying() and enemy.rect().intersects(hit_box):
 			enemy.take_damage(damage)
 			return true
 	return false

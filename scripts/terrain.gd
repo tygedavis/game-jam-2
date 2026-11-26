@@ -157,19 +157,26 @@ func damage_barrier(layer: int, amount: float, at_x: float) -> bool:
 
 
 ## Keeps an enemy spawn y underground (at least two tiles down) and above the first unbroken
-## barrier below the player, so nothing spawns on the far side of a wall.
-func clamp_spawn_y(y: float, player_y: float) -> float:
-	return clampf(y, TILE * 2.0, next_barrier_y(player_y) - TILE)
+## barrier below the player, so nothing spawns on the far side of a wall. `size` is the enemy's
+## width: a big enemy is kept far enough up that it does not start overlapping the wall.
+func clamp_spawn_y(y: float, player_y: float, size := 0.0) -> float:
+	return clampf(y, TILE * 2.0, next_barrier_y(player_y) - spawn_margin(size))
+
+
+## How far above a barrier line an enemy of `size` must spawn: one tile, or more if the enemy is
+## big enough to reach the wall (which extends barrier_thickness/2 above the line).
+func spawn_margin(size := 0.0) -> float:
+	return maxf(TILE, barrier_thickness * 0.5 + size * 0.5)
 
 
 ## Where an enemy spawns: `distance` px from the player at `angle`. If that is below the first
 ## unbroken barrier, it is mirrored upward (so it keeps its distance, and stays off screen)
 ## instead of being squashed onto the player's own height.
-func spawn_position(player: Vector2, angle: float, distance: float) -> Vector2:
+func spawn_position(player: Vector2, angle: float, distance: float, size := 0.0) -> Vector2:
 	var pos := player + Vector2.from_angle(angle) * distance
-	if pos.y > next_barrier_y(player.y) - TILE:
+	if pos.y > next_barrier_y(player.y) - spawn_margin(size):
 		pos.y = player.y - (pos.y - player.y)
-	pos.y = clamp_spawn_y(pos.y, player.y)
+	pos.y = clamp_spawn_y(pos.y, player.y, size)
 	return pos
 
 

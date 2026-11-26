@@ -29,6 +29,9 @@ func _ready() -> void:
 	_sprite.hframes = def.sprite_hframes
 	_sprite.vframes = def.sprite_vframes
 	_sprite.fps = def.sprite_fps
+	# Spawn code doesn't know our size; make sure a big enemy doesn't start inside a barrier wall.
+	if terrain != null and target != null:
+		position.y = terrain.clamp_spawn_y(position.y, target.position.y, def.size)
 	# Burrow out of the ground at the spawn point so we never start embedded.
 	_clear_around(position)
 

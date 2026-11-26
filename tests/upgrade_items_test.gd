@@ -27,7 +27,7 @@ func _test_def() -> void:
 	check("cost_for(0) is base_cost", d.cost_for(0) == d.base_cost)
 	check("cost_for(2) grows", d.cost_for(2) == roundi(d.base_cost * pow(d.cost_growth, 2)))
 	var loaded: UpgradeItemDef = load("res://data/items/sharp_tip.tres")
-	check("id() is the file name", loaded != null and loaded.id() == "sharp_tip")
+	check("id() is the item_id", loaded != null and loaded.id() == "sharp_tip")
 	check("max_shop_level defaults to 5", UpgradeItemDef.new().max_shop_level == 5)
 	check("unlock_cost is positive", UpgradeItemDef.new().unlock_cost > 0)
 	var catalog: ItemCatalog = load("res://data/item_catalog.tres")
@@ -42,6 +42,23 @@ func _test_def() -> void:
 	for i in ids:
 		seen[i] = true
 	check("catalog ids are unique", seen.size() == ids.size())
+	check("real catalog validates", catalog != null and catalog.validate().is_empty())
+	_test_catalog_validate()
+
+
+func _test_catalog_validate() -> void:
+	var a := UpgradeItemDef.new()
+	a.item_id = "same"
+	var b := UpgradeItemDef.new()
+	b.item_id = "same"
+	var c := UpgradeItemDef.new()
+	var cat := ItemCatalog.new()
+	cat.items = [a, b, c]
+	var errors := cat.validate()
+	check("validate reports duplicate and empty ids", errors.size() == 2)
+	var renamed: UpgradeItemDef = load("res://data/items/sharp_tip.tres").duplicate()
+	renamed.resource_path = "res://somewhere/else/tougher_tip.tres"
+	check("id() survives a rename of the .tres", renamed.id() == "sharp_tip")
 
 
 var _item_count := 0
@@ -49,9 +66,9 @@ var _item_count := 0
 
 func _item(prop: String, per_stack: float, step := 0.02) -> UpgradeItemDef:
 	var d := UpgradeItemDef.new()
-	# id() comes from the file name, so each test item needs its own path.
+	# id() is the item_id, so each test item needs its own.
 	_item_count += 1
-	d.resource_path = "res://test_item_%d.tres" % _item_count
+	d.item_id = "test_item_%d" % _item_count
 	d.property = prop
 	d.buff_per_stack = per_stack
 	d.buff_step_per_level = step

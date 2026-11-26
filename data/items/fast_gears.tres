@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1")
+item_id = "fast_gears"
 display_name = "Fast Gears"
 description = "+attack speed per stack"
 property = "attack_interval"

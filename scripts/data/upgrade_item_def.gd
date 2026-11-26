@@ -1,10 +1,12 @@
 class_name UpgradeItemDef
 extends Resource
 ## An upgrade found buried in the map. Add one by creating an UpgradeItemDef .tres and listing it
-## in the item catalog (data/item_catalog.tres). It must be its own .tres file: the file name is
-## its id. Each pickup adds one stack for the current run; every stack adds a percentage buff to
-## one Drill stat. The owner can later strengthen the per-stack buff (shop level).
+## in the item catalog (data/item_catalog.tres), and give it a unique item_id. Each pickup adds one
+## stack for the current run; every stack adds a percentage buff to one Drill stat. The owner can later strengthen the per-stack buff (shop level).
 
+## Save key for unlocks and shop levels (issue #31). Must be non-empty, unique in the catalog, and
+## never changed once shipped, so renaming or moving the .tres keeps the player's purchases.
+@export var item_id := ""
 @export var display_name := "Upgrade Item"
 @export_multiline var description := ""
 ## Which Drill property it buffs. A positive buff on attack_interval makes attacks faster.
@@ -30,9 +32,9 @@ extends Resource
 @export var color := Color(0.9, 0.9, 0.9)
 
 
-## Stable save key, taken from the file name.
+## Stable save key: item_id. Empty means the def is misconfigured; ItemCatalog.validate() reports it.
 func id() -> String:
-	return resource_path.get_file().get_basename()
+	return item_id
 
 
 func buff_at_level(shop_level: int) -> float:

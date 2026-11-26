@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1")
+item_id = "turbo_tread"
 display_name = "Turbo Tread"
 description = "+move speed per stack"
 property = "speed"

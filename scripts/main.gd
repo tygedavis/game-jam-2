@@ -57,6 +57,10 @@ func _ready() -> void:
 	_hud = Label.new()
 	_hud.position = Vector2(12, 8)
 	layer.add_child(_hud)
+	var meter := WeaponMeter.new()
+	layer.add_child(meter)
+	meter.setup(drill)
+	meter.position = Vector2(12, get_viewport_rect().size.y - 48.0)
 	add_child(layer)
 	terrain.gem_collected.connect(_on_gem_collected)
 	terrain.upgrade_collected.connect(_on_upgrade_collected)
@@ -74,9 +78,11 @@ func _ready() -> void:
 	_return_prompt.declined.connect(_on_return_declined)
 	add_child(_return_prompt)
 	_update_hud()
+	Reticle.apply()
 
 
 func _exit_tree() -> void:
+	Reticle.clear()
 	if DevMode.run == self:
 		DevMode.run = null
 

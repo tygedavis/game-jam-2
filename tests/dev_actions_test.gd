@@ -32,6 +32,7 @@ func _init() -> void:
 	await test_skip_up()
 	await test_skip_up_at_surface()
 	await test_give_item()
+	await test_equip_weapon()
 	await test_kill_enemies()
 	await test_spawning_paused()
 	_dev.set_flag(&"spawning_paused", false)
@@ -150,6 +151,16 @@ func test_give_item() -> void:
 	_check("give: stops at the stack cap", not DevActions.give_item(main, def) \
 		and main.drill.stacks_of(def) == def.max_stacks)
 	await _finish(main)
+
+
+func test_equip_weapon() -> void:
+	var main := await _main()
+	var flame: WeaponDef = load("res://data/weapons/flamethrower.tres")
+	_check("equip: accepted during a run", DevActions.equip_weapon(main, flame))
+	_check("equip: secondary slot holds the flamethrower", main.drill.secondary != null and main.drill.secondary.def == flame)
+	_check("equip: primary untouched", main.drill.primary.def.id() == "basic_gun")
+	await _finish(main)
+	_check("equip: no run is refused", not DevActions.equip_weapon(null, flame))
 
 
 func test_kill_enemies() -> void:

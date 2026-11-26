@@ -40,6 +40,14 @@ static func give_item(run: Node, def: UpgradeItemDef) -> bool:
 	return run.drill.stacks_of(def) > before
 
 
+## Equips a weapon on the run's drill, in the slot its def names. Returns false if there is no run.
+static func equip_weapon(run: Node, def: WeaponDef) -> bool:
+	if not is_instance_valid(run):
+		return false
+	run.drill.equip(def)
+	return true
+
+
 ## Removes every enemy (not counted as kills). Returns how many.
 static func kill_enemies(run: Node) -> int:
 	if not is_instance_valid(run):

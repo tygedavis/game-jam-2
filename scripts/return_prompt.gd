@@ -6,6 +6,8 @@ extends CanvasLayer
 signal confirmed
 signal declined
 
+var _return_button: Button
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -25,19 +27,20 @@ func _ready() -> void:
 	label.text = "Return to the surface?"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(label)
-	var go := Button.new()
-	go.text = "Return (Space)"
-	go.pressed.connect(_confirm)
-	col.add_child(go)
+	_return_button = Button.new()
+	_return_button.text = "Return (Space)"
+	_return_button.pressed.connect(_confirm)
+	col.add_child(_return_button)
 	var stay := Button.new()
 	stay.text = "Keep digging (Esc)"
 	stay.pressed.connect(_decline)
 	col.add_child(stay)
-	go.grab_focus.call_deferred()
 
 
 func open() -> void:
 	visible = true
+	# Focus only once shown: a hidden control can't hold focus, so grabbing it in _ready() did nothing.
+	_return_button.grab_focus()
 	get_tree().paused = true
 
 

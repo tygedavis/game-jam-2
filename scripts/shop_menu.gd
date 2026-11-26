@@ -43,6 +43,8 @@ func _ready() -> void:
 
 func open(catalog: ItemCatalog) -> void:
 	_catalog = catalog
+	for err in catalog.validate() if catalog else []:
+		push_error("Item catalog: " + err)
 	visible = true
 	_refresh()
 

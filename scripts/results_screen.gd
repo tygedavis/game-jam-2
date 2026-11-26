@@ -9,6 +9,7 @@ signal retry
 const KEY_DELAY_MSEC := 300
 
 var _label: Label
+var _button: Button
 var _opened_at_msec := 0
 
 
@@ -29,16 +30,17 @@ func _ready() -> void:
 	_label = Label.new()
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(_label)
-	var button := Button.new()
-	button.text = "Return to surface (Space)"
-	button.pressed.connect(func() -> void: retry.emit())
-	col.add_child(button)
-	button.grab_focus.call_deferred()
+	_button = Button.new()
+	_button.text = "Return to surface (Space)"
+	_button.pressed.connect(func() -> void: retry.emit())
+	col.add_child(_button)
 
 
 func show_results(text: String) -> void:
 	_label.text = text
 	visible = true
+	# Focus only once shown: a hidden control can't hold focus, so grabbing it in _ready() did nothing.
+	_button.grab_focus()
 	_opened_at_msec = Time.get_ticks_msec()
 	get_tree().paused = true
 

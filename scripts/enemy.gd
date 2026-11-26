@@ -42,11 +42,18 @@ func rect() -> Rect2:
 
 
 func take_damage(amount: float) -> void:
+	if is_dying():
+		return # already killed this frame; don't emit killed twice
 	hp -= amount
 	_flash = 0.1
 	if hp <= 0.0:
 		killed.emit(def, position)
 		queue_free()
+
+
+## True once the enemy has been killed. It stays in the tree (and the "enemies" group) until the end of the frame.
+func is_dying() -> bool:
+	return hp <= 0.0 or is_queued_for_deletion()
 
 
 func _physics_process(delta: float) -> void:

@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1")
+item_id = "sharp_tip"
 display_name = "Sharp Tip"
 description = "+attack damage per stack"
 property = "attack_damage"

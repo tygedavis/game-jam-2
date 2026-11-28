@@ -15,7 +15,7 @@ func check(test_name: String, ok: bool) -> void:
 
 func _item(item_name: String) -> UpgradeItemDef:
 	var d := UpgradeItemDef.new()
-	d.resource_path = "res://fake_items/%s.tres" % item_name
+	d.item_id = item_name
 	d.unlock_cost = 30
 	d.base_cost = 20
 	d.cost_growth = 1.0

@@ -5,12 +5,17 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Read-only by default; only the release job gets write access.
+permissions:
+  contents: read
+
 jobs:
   export:
     name: Export ${{ matrix.preset }}
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:4.7.2
+      # Pinned by digest; update it together with the tag when bumping Godot
+      image: barichello/godot-ci:4.7.2@sha256:cdcca31e9194fd59a68a63f4b1b9c3981716819c520cd6f7966c5d72ca7246bd
     strategy:
       fail-fast: false
       matrix:
@@ -22,7 +27,7 @@ jobs:
             dir: windows
             artifact: game-jam-2-windows
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install export templates
         run: |
@@ -37,7 +42,7 @@ jobs:
           mkdir -p build/${{ matrix.dir }}
           bash tools/build.sh --production "${{ matrix.preset }}"
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ matrix.artifact }}
           path: build/${{ matrix.dir }}
@@ -50,11 +55,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Two pushes to main must not update the release at the same time
+    concurrency:
+      group: release-latest
+      cancel-in-progress: false
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: artifacts
 
@@ -66,11 +75,15 @@ jobs:
           tar -czf dist/game-jam-2-linux.tar.gz -C artifacts/game-jam-2-linux .
           (cd artifacts/game-jam-2-windows && zip -r ../../dist/game-jam-2-windows.zip .)
 
-      - name: Replace latest release
+      - name: Update latest release in place
+        # Never delete the release first: if any step fails, the previous build stays downloadable.
         run: |
-          gh release delete latest --cleanup-tag --yes || true
-          gh release create latest dist/* \
-            --target "${{ github.sha }}" \
-            --title "Latest build (${GITHUB_SHA::7})" \
-            --notes "Automatic build of \`main\` at ${{ github.sha }}." \
-            --prerelease
+          title="Latest build (${GITHUB_SHA::7})"
+          notes="Automatic build of \`main\` at ${GITHUB_SHA}."
+          if gh release view latest > /dev/null 2>&1; then
+            gh release upload latest dist/* --clobber
+            gh api -X PATCH "repos/${GH_REPO}/git/refs/tags/latest" -f sha="${GITHUB_SHA}" -F force=true --silent
+            gh release edit latest --title "$title" --notes "$notes" --prerelease
+          else
+            gh release create latest dist/* --target "${GITHUB_SHA}" --title "$title" --notes "$notes" --prerelease
+          fi
